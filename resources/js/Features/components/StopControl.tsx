@@ -19,6 +19,7 @@ interface StopCode {
   nivel_2: string;
 }
 
+
 interface StopControlProps {
   currentHour: HourlyProduction;
   onUpdateHour: (updates: Partial<HourlyProduction>) => void;
@@ -32,7 +33,6 @@ interface StopControlProps {
   BPH: number;
 }
 
-// Mapeo según la imagen proporcionada
 const TIPO_MAP: Record<string, string> = {
   'EQ': 'EQUIPO',
   'OPD': 'OPERATIVAS',
@@ -50,21 +50,22 @@ const StopControl: React.FC<StopControlProps> = ({
   productData,
   BPH
 }) => {
-  // Estado para el catálogo de códigos
   const [catalog, setCatalog] = useState<StopCode[]>([]);
-  
-  // Estado para nuevo registro de parada
   const [newStop, setNewStop] = useState({
     codigo: '',
-    tipo: '' as any,
+    tipo: '',
     descripcion: '',
     tiempoMinutos: 0,
-    frecuencia: 1,
+    frecuencia: 1, // FRECUENCIA MANTENIDA
   });
 
-  const [comments, setComments] = useState<HourComments>(currentHour.comments);
+  const [comments, setComments] = useState<HourComments>({
+    ...currentHour.comments,
+    mnf: '',
+    mantto: '',
+    calidad: ''
+  });
 
-  // Cargar catálogo al montar el componente
   useEffect(() => {
     const loadCatalog = async () => {
       const data = await fetchStopCodes();
@@ -73,28 +74,15 @@ const StopControl: React.FC<StopControlProps> = ({
     loadCatalog();
   }, []);
 
-  /**
-   * Lógica de búsqueda automática por código
-   */
   const handleCodeChange = (code: string) => {
     const cleanCode = code.toUpperCase();
     const found = catalog.find(item => item.codigo === cleanCode);
-
-    if (found) {
-      setNewStop({
-        ...newStop,
-        codigo: cleanCode,
-        descripcion: found.detalle,
-        tipo: TIPO_MAP[found.tipo_n0] || 'EQUIPO'
-      });
-    } else {
-      setNewStop({
-        ...newStop,
-        codigo: cleanCode,
-        descripcion: '',
-        tipo: ''
-      });
-    }
+    setNewStop({
+      ...newStop,
+      codigo: cleanCode,
+      descripcion: found ? found.detalle : '',
+      tipo: found ? (TIPO_MAP[found.tipo_n0] || 'EQUIPO') : ''
+    });
   };
 
   const handleProducidoChange = (value: number) => {
@@ -104,8 +92,14 @@ const StopControl: React.FC<StopControlProps> = ({
   };
 
   const handleAddStop = () => {
-    if (!newStop.codigo || !newStop.descripcion || newStop.tiempoMinutos <= 0) {
-      alert('Código no válido o faltan datos de tiempo');
+    if (!newStop.codigo || newStop.tiempoMinutos <= 0) {
+      alert('Faltan datos en la parada (Código o Tiempo)');
+      return;
+    }
+
+    const totalActual = currentHour.stops.reduce((acc, s) => acc + s.tiempoMinutos, 0);
+    if ((totalActual + newStop.tiempoMinutos) > (currentHour.justificar + 0.1)) {
+      alert(`Error: No puede justificar más de los ${currentHour.justificar.toFixed(0)} min requeridos.`);
       return;
     }
 
@@ -117,16 +111,10 @@ const StopControl: React.FC<StopControlProps> = ({
 
     const updatedStops = [...currentHour.stops, stop];
     const justificado = calculateJustificado(updatedStops);
-
     onUpdateHour({ stops: updatedStops, justificado });
 
-    setNewStop({
-      codigo: '',
-      tipo: '',
-      descripcion: '',
-      tiempoMinutos: 0,
-      frecuencia: 1
-    });
+    // Reset con frecuencia en 1
+    setNewStop({ codigo: '', tipo: '', descripcion: '', tiempoMinutos: 0, frecuencia: 1 });
   };
 
   const handleDeleteStop = (id: string) => {
@@ -136,19 +124,38 @@ const StopControl: React.FC<StopControlProps> = ({
   };
 
   const handleCloseClick = () => {
-    const missing = currentHour.justificar - currentHour.justificado;
-    if (missing > 1 && !confirm(`Faltan ${missing.toFixed(2)} min. ¿Cerrar?`)) return;
+    console.log("%c--- REPORTE HORA " + currentHour.hour + " ---", "color: #4f46e5; font-weight: bold;");
+    console.log("Paradas:", currentHour.stops);
+    console.log("Comentarios:", comments);
+    // Keep existing comments when updating the hour field
+    // Remove invalid hour property; HourComments does not include it
+    setComments({  
+      ...currentHour.comments,
+    mnf: '',
+    mantto: '',
+    calidad: '' 
+  });
+    
     onUpdateHour({ comments });
     onCloseHour();
   };
 
+  const hasType = (types: string[]) => currentHour.stops.some(s => types.includes(s.tipo));
+  const canEditMantto = hasType(['EQUIPO', 'OPERATIVAS']);
+  const canEditCalidad = hasType(['PERDIDAS DE CALIDAD']);
+
   return (
     <div className="bg-white rounded-lg shadow-lg p-6">
-      <h2 className="text-xl font-bold text-gray-800 mb-5 pb-3 border-b-2 border-indigo-600 ">
-        Control de Paradas - Hora {currentHour.hour} / {BPH.toLocaleString()}- BPH 
-      </h2>
+      <div className="flex justify-between items-center mb-5 pb-3 border-b-2 border-indigo-600">
+        <h2 className="text-xl font-bold text-gray-800">
+          Control de Paradas - Hora {currentHour.hour}
+        </h2>
+        <span className="bg-indigo-100 text-indigo-800 px-3 py-1 rounded-full text-sm font-bold">
+          BPH: {BPH.toLocaleString()}
+        </span>
+      </div>
 
-      {/* Información del Producto y Métricas (Sin cambios) */}
+      {/* Info Producto */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
         <InfoBox label="FORMATO" value={productData.formato} />
         <InfoBox label="MARCA" value={productData.marca} />
@@ -156,115 +163,118 @@ const StopControl: React.FC<StopControlProps> = ({
         <InfoBox label="PH ESTIMADO" value={productData.palletsPorHora.toString()} />
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6 bg-gray-50 p-4 rounded-lg">
+      {/* Métricas */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6 bg-gray-50 p-4 rounded-lg border">
         <InfoBox label="ESTIMADO" value={currentHour.estimado.toString()} color="blue" />
         <div>
-          <label className="block text-xs text-gray-500 mb-1">PRODUCIDO</label>
+          <label className="block text-xs text-gray-500 mb-1 font-bold">PRODUCIDO</label>
           <input
             type="number"
             value={currentHour.producido || ''}
             onChange={(e) => handleProducidoChange(Number(e.target.value))}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg font-bold outline-none"
           />
         </div>
         <InfoBox label="A JUSTIFICAR" value={`${currentHour.justificar.toFixed(0)} min`} color="red" />
         <InfoBox label="JUSTIFICADO" value={`${currentHour.justificado.toFixed(0)} min`} color="green" />
       </div>
 
-      {/* Formulario de Paradas MODIFICADO */}
+      {/* REGISTRO DE PARADA (CON FRECUENCIA) */}
       <div className="mb-6">
-        <h3 className="font-semibold text-gray-700 mb-3">Registrar Parada</h3>
-        <div className="grid grid-cols-1 md:grid-cols-6 gap-3 mb-3">
-          {/* INPUT DE CÓDIGO - Único que busca */}
+        <h3 className="font-semibold text-gray-700 mb-3 text-xs uppercase">Registrar Parada</h3>
+        <div className="grid grid-cols-1 md:grid-cols-6 gap-2 mb-3">
           <input
-            type="text"
-            placeholder="Código"
-            value={newStop.codigo}
+            type="text" placeholder="Código" value={newStop.codigo}
             onChange={(e) => handleCodeChange(e.target.value)}
-            className="px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none font-bold"
+            className="px-3 py-2 border rounded-lg font-bold uppercase focus:border-indigo-500 outline-none"
           />
-          
-          {/* TIPO - Ahora es un display de solo lectura */}
-          <div className="px-3 py-2 border rounded-lg bg-gray-100 text-xs flex items-center justify-center text-center font-semibold text-gray-600">
+          <div className="px-3 py-2 border rounded-lg bg-gray-100 text-[10px] flex items-center justify-center font-bold text-gray-500 uppercase text-center">
             {newStop.tipo || 'TIPO'}
           </div>
-
-          {/* DESCRIPCIÓN - Ahora es un display de solo lectura */}
-          <div className="md:col-span-2 px-3 py-2 border rounded-lg bg-gray-100 text-sm flex items-center text-gray-700 italic">
+          <div className="md:col-span-2 px-3 py-2 border rounded-lg bg-gray-100 text-xs flex items-center italic text-gray-600">
             {newStop.descripcion || 'Descripción automática'}
           </div>
-
           <input
-            type="number"
-            placeholder="Tiempo (min)"
-            value={newStop.tiempoMinutos || ''}
+            type="number" placeholder="Minutos" value={newStop.tiempoMinutos || ''}
             onChange={(e) => setNewStop({ ...newStop, tiempoMinutos: Number(e.target.value) })}
-            className="px-3 py-2 border rounded-lg"
+            className="px-3 py-2 border rounded-lg font-bold"
           />
           <input
-            type="number"
-            placeholder="Frecuencia"
-            value={newStop.frecuencia}
+            type="number" placeholder="Frecuencia" value={newStop.frecuencia}
             onChange={(e) => setNewStop({ ...newStop, frecuencia: Number(e.target.value) })}
-            className="px-3 py-2 border rounded-lg"
+            className="px-3 py-2 border rounded-lg font-bold"
           />
         </div>
         <button
           onClick={handleAddStop}
-          className="w-full bg-indigo-600 text-white font-semibold py-2 px-6 rounded-lg hover:bg-indigo-700 transition-colors"
+          className="w-full bg-indigo-600 text-white font-bold py-2 rounded-lg hover:bg-indigo-700"
         >
           Agregar Parada
         </button>
       </div>
 
-      {/* Lista de Paradas, Comentarios y Cierre (Sin cambios significativos) */}
-      {/* ... (Resto del componente igual) */}
-      {currentHour.stops.length > 0 && (
-        <div className="mb-6">
-          <h3 className="font-semibold text-gray-700 mb-3">Paradas Registradas</h3>
-          <div className="space-y-2">
-            {currentHour.stops.map(stop => (
-              <div key={stop.id} className="flex items-center justify-between bg-gray-50 p-3 rounded-lg border-l-4 border-indigo-500">
-                <div className="flex-1 grid grid-cols-5 gap-2 text-sm">
-                  <span className="font-bold">{stop.codigo}</span>
-                  <span className="text-xs text-indigo-600 font-semibold">{stop.tipo}</span>
-                  <span className="col-span-2 text-gray-700">{stop.descripcion}</span>
-                  <span className="font-medium text-right">{stop.tiempoMinutos} min × {stop.frecuencia}</span>
-                </div>
-                <button onClick={() => handleDeleteStop(stop.id)} className="ml-3 text-red-600 hover:scale-110 transition-transform">🗑️</button>
-              </div>
-            ))}
+      {/* Lista de Paradas */}
+      <div className="mb-6 space-y-2">
+        {currentHour.stops.map(stop => (
+          <div key={stop.id} className="flex items-center justify-between bg-gray-50 p-3 rounded-lg border-l-4 border-indigo-500 text-sm">
+            <div className="flex-1 grid grid-cols-6 gap-2 items-center">
+              <span className="font-bold">{stop.codigo}</span>
+              <span className="text-[10px] text-indigo-600 font-bold uppercase">{stop.tipo}</span>
+              <span className="col-span-2 text-gray-700 truncate">{stop.descripcion}</span>
+              <span className="font-bold text-center">{stop.tiempoMinutos} min</span>
+              <span className="text-gray-500 text-center">Frec: {stop.frecuencia}</span>
+            </div>
+            <button onClick={() => handleDeleteStop(stop.id)} className="ml-4 text-red-500">🗑️</button>
           </div>
-        </div>
-      )}
+        ))}
+      </div>
 
-      <div className="mb-6">
-        <h3 className="font-semibold text-gray-700 mb-3">Comentarios por Área</h3>
-        <div className="space-y-2">
-          {['mnf', 'mantto', 'calidad'].map((area) => (
-            <input
-              key={area}
-              type="text"
-              placeholder={area.toUpperCase()}
-              value={(comments as any)[area]}
-              onChange={(e) => setComments({ ...comments, [area]: e.target.value })}
-              className="w-full px-3 py-2 border rounded-lg"
-            />
-          ))}
+      {/* Comentarios Consolidados por Área */}
+      <div className="mb-8 border-t pt-5 space-y-4">
+        <h3 className="font-bold text-gray-700 text-sm uppercase">Comentarios de la Hora</h3>
+        
+        <div className="space-y-1">
+          <label className="text-[10px] font-black text-indigo-600 uppercase">Manufactura (MNF)</label>
+          <input
+            type="text" placeholder="General de la hora..."
+            value={comments.mnf}
+            onChange={(e) => setComments({ ...comments, mnf: e.target.value })}
+            className="w-full px-3 py-2 border rounded-lg"
+          />
+        </div>
+
+        <div className="space-y-1">
+          <label className={`text-[10px] font-black uppercase ${canEditMantto ? 'text-orange-600' : 'text-gray-400'}`}>Mantenimiento</label>
+          <input
+            type="text" disabled={!canEditMantto}
+            value={comments.mantto}
+            onChange={(e) => setComments({ ...comments, mantto: e.target.value })}
+            className={`w-full px-3 py-2 border rounded-lg ${!canEditMantto ? 'bg-gray-100' : 'border-orange-200'}`}
+          />
+        </div>
+
+        <div className="space-y-1">
+          <label className={`text-[10px] font-black uppercase ${canEditCalidad ? 'text-green-600' : 'text-gray-400'}`}>Calidad</label>
+          <input
+            type="text" disabled={!canEditCalidad}
+            value={comments.calidad}
+            onChange={(e) => setComments({ ...comments, calidad: e.target.value })}
+            className={`w-full px-3 py-2 border rounded-lg ${!canEditCalidad ? 'bg-gray-100' : 'border-green-200'}`}
+          />
         </div>
       </div>
 
-      <button onClick={handleCloseClick} className="w-full bg-green-600 text-white font-bold py-3 px-6 rounded-lg hover:bg-green-700 shadow-md">
-        Cerrar Hora y Avanzar
+      <button onClick={handleCloseClick} className="w-full bg-green-600 text-white font-bold py-4 rounded-xl shadow-lg hover:bg-green-700 transition-all uppercase tracking-widest">
+        Finalizar Hora
       </button>
     </div>
   );
 };
 
 const InfoBox: React.FC<{ label: string; value: string; color?: string }> = ({ label, value, color = 'gray' }) => (
-  <div className="text-center p-3 bg-white rounded-lg border">
-    <div className="text-xs text-gray-500 mb-1">{label}</div>
-    <div className={`text-base font-bold text-${color}-800`}>{value}</div>
+  <div className="text-center p-3 bg-white rounded-lg border shadow-sm">
+    <div className="text-[10px] text-gray-500 mb-1 font-bold uppercase">{label}</div>
+    <div className={`text-base font-black text-${color}-800`}>{value}</div>
   </div>
 );
 
