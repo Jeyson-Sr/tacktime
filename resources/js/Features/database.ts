@@ -293,6 +293,7 @@ const catalogStopCodes: StopCode[] = [
   { "codigo": "C20", "detalle": "REGULACION DE DISCO SELECTOR", "tipo_n0": "OPD", "nivel_1": "PARADAS OPERATIVAS", "nivel_2": "LLENADORA / FILLER" },
   { "codigo": "C21", "detalle": "ALIMENTADOR DE TAPAS", "tipo_n0": "EQ", "nivel_1": "PARADAS POR EQUIPO", "nivel_2": "LLENADORA / FILLER" },
   { "codigo": "C22", "detalle": "CAMBIO DE RESORTES", "tipo_n0": "EQ", "nivel_1": "PARADAS POR EQUIPO", "nivel_2": "LLENADORA / FILLER" },
+  { "codigo": "J16", "detalle": "BAJA DE PRODUCTO", "tipo_n0": "QD", "nivel_1": "PERDIDAS DE CALIDAD", "nivel_2": "PRODUCTO DEFECTUOSO" },
   { "codigo": "J82", "detalle": "TIEMPO NO PROGRAMADO", "tipo_n0": "TNP", "nivel_1": "TIEMPO NO PROGRAMADO", "nivel_2": "HORAS NO PROGRAMADAS" }
 ]
 
