@@ -6,9 +6,10 @@
  * Componente para registrar producción horaria y paradas.
  * Calcula automáticamente minutos a justificar y estado.
  */
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, use } from 'react';
 import { HourlyProduction, StopRecord, HourComments } from '../types';
 import { calculateStatus, calculateJustificar, calculateJustificado, generateId } from '../utils/calculations';
+import StopCodeSearchModal from './StopCodeSearchModal';
 // Importamos la función y el tipo desde tu base de datos
 import { fetchStopCodes } from '../database';
 interface StopCode {
@@ -50,6 +51,7 @@ const StopControl: React.FC<StopControlProps> = ({
   productData,
   BPH
 }) => {
+  const [isModalOpenBuscadorCode, setIsModalOpenBuscadorCode] = useState(false);
   const [catalog, setCatalog] = useState<StopCode[]>([]);
   const [newStop, setNewStop] = useState({
     codigo: '',
@@ -84,6 +86,9 @@ const StopControl: React.FC<StopControlProps> = ({
       tipo: found ? (TIPO_MAP[found.tipo_n0] || 'EQUIPO') : ''
     });
   };
+
+  
+
 
   const handleProducidoChange = (value: number) => {
     const justificar = calculateJustificar(currentHour.estimado, value);
@@ -124,9 +129,23 @@ const StopControl: React.FC<StopControlProps> = ({
   };
 
   const handleCloseClick = () => {
+    const { justificar, justificado, ...rest } = currentHour;
+    
+    if (!currentHour.producido || currentHour.producido <= 0) {
+      alert('Faltan datos en la parada (Producido)');
+      return;
+    }
+
+    // if (justificado !== justificar) {
+    //   alert('Error: Justificado no coincide con Justificar.');
+    //   return;
+    // }
+    
+    
     console.log("%c--- REPORTE HORA " + currentHour.hour + " ---", "color: #4f46e5; font-weight: bold;");
     console.log("Paradas:", currentHour.stops);
     console.log("Comentarios:", comments);
+    console.log("Justificar:", justificar, "Justificado:", justificado);
     // Keep existing comments when updating the hour field
     // Remove invalid hour property; HourComments does not include it
     setComments({  
@@ -135,6 +154,7 @@ const StopControl: React.FC<StopControlProps> = ({
     mantto: '',
     calidad: '' 
   });
+
     
     onUpdateHour({ comments });
     onCloseHour();
@@ -183,11 +203,12 @@ const StopControl: React.FC<StopControlProps> = ({
       <div className="mb-6">
         <h3 className="font-semibold text-gray-700 mb-3 text-xs uppercase">Registrar Parada</h3>
         <div className="grid grid-cols-1 md:grid-cols-6 gap-2 mb-3">
-          <input
-            type="text" placeholder="Código" value={newStop.codigo}
-            onChange={(e) => handleCodeChange(e.target.value)}
-            className="px-3 py-2 border rounded-lg font-bold uppercase focus:border-indigo-500 outline-none"
-          />
+            <input
+              type="text" placeholder="Código" value={newStop.codigo}
+              onDoubleClick={() => setIsModalOpenBuscadorCode(true)}
+              onChange={(e) => handleCodeChange(e.target.value)}
+              className="px-3 py-2 border rounded-lg font-bold uppercase focus:border-indigo-500 outline-none"
+            />
           <div className="px-3 py-2 border rounded-lg bg-gray-100 text-[10px] flex items-center justify-center font-bold text-gray-500 uppercase text-center">
             {newStop.tipo || 'TIPO'}
           </div>
@@ -212,6 +233,23 @@ const StopControl: React.FC<StopControlProps> = ({
           Agregar Parada
         </button>
       </div>
+
+
+            {/* Modal Takt Time */}
+            {isModalOpenBuscadorCode && (
+              <StopCodeSearchModal 
+                isOpen={isModalOpenBuscadorCode}
+                onClose={() => setIsModalOpenBuscadorCode(false)}
+                onSelect={(code: StopCode) => setNewStop(prev => ({
+                  ...prev,
+                  codigo: code.codigo,
+                  descripcion: code.detalle,
+                  tipo: TIPO_MAP[code.tipo_n0] || 'EQUIPO'
+                }))}
+              />
+            )}
+
+
 
       {/* Lista de Paradas */}
       <div className="mb-6 space-y-2">
@@ -264,12 +302,15 @@ const StopControl: React.FC<StopControlProps> = ({
         </div>
       </div>
 
-      <button onClick={handleCloseClick} className="w-full bg-green-600 text-white font-bold py-4 rounded-xl shadow-lg hover:bg-green-700 transition-all uppercase tracking-widest">
+      <button
+      onClick={handleCloseClick} 
+      className="w-full bg-green-600 text-white font-bold py-4 rounded-xl shadow-lg hover:bg-green-700 transition-all uppercase tracking-widest">
         Finalizar Hora
       </button>
     </div>
   );
 };
+
 
 const InfoBox: React.FC<{ label: string; value: string; color?: string }> = ({ label, value, color = 'gray' }) => (
   <div className="text-center p-3 bg-white rounded-lg border shadow-sm">

@@ -215,7 +215,7 @@ export type FormErrors = Partial<Record<keyof ProductionData, string>>;
 /**
  * Status de producción (para colores)
  */
-export type ProductionStatus = 'blue' | 'yellow' | 'red';
+export type ProductionStatus = 'blue' | 'yellow' | 'red' | 'green' | 'gray';
 
 /**
  * Tipos de paradas disponibles

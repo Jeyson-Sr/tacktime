@@ -21,6 +21,8 @@ const TaktTimeModal: React.FC<TaktTimeModalProps> = ({ onClose, hourlyRecords, l
       case 'blue': return 'border-l-blue-500 bg-blue-50';
       case 'yellow': return 'border-l-yellow-400 bg-yellow-50';
       case 'red': return 'border-l-red-500 bg-red-50';
+      case 'green': return 'border-l-green-500 bg-green-50';
+      case 'gray': return 'border-l-gray-300 bg-gray-50';
       default: return 'border-l-gray-300 bg-gray-50';
     }
   };
@@ -107,6 +109,9 @@ const ShiftSection: React.FC<ShiftSectionProps> = ({ title, data, getStatusColor
           </div>
           <div className="text-xs text-gray-700">
             PH Producido: <span className="font-bold">{item.producido}</span>
+          </div>
+          <div className="text-xs text-gray-700">
+            Cumplimiento: <span className="font-bold">{((item.producido / item.estimado)* 100).toFixed(1)}%</span>
           </div>
           {item.closed && (
             <div className="text-xs text-indigo-600 mt-1">👁️ Click para ver detalle</div>
