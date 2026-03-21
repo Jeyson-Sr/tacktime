@@ -106,7 +106,7 @@ const StopControl: React.FC<StopControlProps> = ({
     }
 
     const totalActual = currentHour.stops.reduce((acc, s) => acc + s.tiempoMinutos, 0);
-    if ((totalActual + newStop.tiempoMinutos) > (currentHour.justificar + 0.1)) {
+    if ((totalActual + newStop.tiempoMinutos) > (currentHour.justificar)) {
       alert(`Error: No puede justificar más de los ${currentHour.justificar.toFixed(1)} min requeridos.`);
       return;
     }
