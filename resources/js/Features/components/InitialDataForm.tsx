@@ -174,7 +174,7 @@ const InitialDataForm: React.FC<{ onSubmit: (data: any) => void }> = ({ onSubmit
   // Cálculo de Pallets
   const palletsPorHora = useMemo(() => {
     if (!productoSel) return 0;
-    return Math.round(productoSel.bph / productoSel.um / productoSel.paqPallet);
+    return (productoSel.bph / productoSel.um / productoSel.paqPallet).toFixed(1);
   }, [productoSel]);
 
   // Manejo de envío final con la estructura exacta solicitada
