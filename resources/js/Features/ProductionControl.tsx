@@ -88,7 +88,12 @@ const ProductionControl: React.FC = () => {
   const currentHour = appState.hourlyRecords[appState.currentHourIndex];
 
   // Función para generar código con año actual + 6 dígitos consecutivos
-  const generateConsecutiveCode = (input: number | string): string => {
+  const generateConsecutiveCode = (input: number | string | null): string | null => {
+    if (!input) {
+      console.log('El número no puede estar vacío');
+      return null;
+    }
+
     const currentYear = new Date().getFullYear();
     const baseYear = currentYear * 1000000; // Multiplicar por 1,000,000 para dejar espacio para 6 dígitos
     
@@ -96,7 +101,8 @@ const ProductionControl: React.FC = () => {
     const numInput = typeof input === 'string' ? parseInt(input, 10) : input;
     
     if (isNaN(numInput) || numInput < 0 || numInput > 999999) {
-      throw new Error('El número debe estar entre 0 y 999999');
+      console.log('El número debe estar entre 0 y 999999');
+      return null;
     }
     
     // Formatear a 6 dígitos con ceros a la izquierda
@@ -117,7 +123,7 @@ const ProductionControl: React.FC = () => {
             <HeaderItem icon={User} label="INGENIERO" value={appState.productionData.ingeniero} />
             <HeaderItem icon={User} label="OPERADOR" value={appState.productionData.operador} />
           </div>
-            <HeaderItem icon={Settings} label="OP" value={generateConsecutiveCode(appState.productionData.op)} />
+            <HeaderItem icon={Settings} label="OP" value={generateConsecutiveCode(appState.productionData.op) || 'N/A'} />
         </div>
 
         {/* Main Grid */}
