@@ -316,6 +316,10 @@ const simulateNetworkDelay = (ms: number = 300): Promise<void> => {
 
 export const fetchGetLinea = () => {
   return  productDatabase.map(l => l.linea);
+
+};
+export const fetchGetDescripcion = (sku: number) => {
+  return  productDatabase.find(l => l.sku === sku)?.descripcion || 'Descripción no encontrada';
 };
 
 

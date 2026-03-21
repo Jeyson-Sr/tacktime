@@ -2,7 +2,7 @@
  * ProductionControl.tsx - Componente principal del sistema
  */
 import React, { useState, useEffect } from 'react';
-import { Calendar, Clock, User, Factory } from 'lucide-react';
+import { Calendar, Clock, User, Factory, Settings } from 'lucide-react';
 import InitialDataForm from './components/InitialDataForm';
 import StopControl from './components/StopControl';
 import KPISection from './components/KPISection';
@@ -87,11 +87,29 @@ const ProductionControl: React.FC = () => {
 
   const currentHour = appState.hourlyRecords[appState.currentHourIndex];
 
+  // Función para generar código con año actual + 6 dígitos consecutivos
+  const generateConsecutiveCode = (input: number | string): string => {
+    const currentYear = new Date().getFullYear();
+    const baseYear = currentYear * 1000000; // Multiplicar por 1,000,000 para dejar espacio para 6 dígitos
+    
+    // Convertir input a número y validar que esté en el rango de 6 dígitos
+    const numInput = typeof input === 'string' ? parseInt(input, 10) : input;
+    
+    if (isNaN(numInput) || numInput < 0 || numInput > 999999) {
+      throw new Error('El número debe estar entre 0 y 999999');
+    }
+    
+    // Formatear a 6 dígitos con ceros a la izquierda
+    const paddedInput = numInput.toString().padStart(6, '0');
+    
+    return `${currentYear}${paddedInput}`;
+  };
+
   return (
     <div className="min-h-screen  p-5">
       <div className="max-w mx-auto">
         {/* Header */}
-        <div className="bg-white rounded-lg shadow-lg p-4 mb-5">
+        <div className="flex flex-col md:flex-row justify-between items-center bg-white rounded-lg shadow-lg p-4 mb-5">
           <div className="flex flex-wrap gap-6 items-center">
             <HeaderItem icon={Calendar} label="FECHA" value={appState.productionData.fecha} />
             <HeaderItem icon={Clock} label="TURNO" value={appState.productionData.turno} />
@@ -99,6 +117,7 @@ const ProductionControl: React.FC = () => {
             <HeaderItem icon={User} label="INGENIERO" value={appState.productionData.ingeniero} />
             <HeaderItem icon={User} label="OPERADOR" value={appState.productionData.operador} />
           </div>
+            <HeaderItem icon={Settings} label="OP" value={generateConsecutiveCode(appState.productionData.op)} />
         </div>
 
         {/* Main Grid */}
@@ -115,6 +134,8 @@ const ProductionControl: React.FC = () => {
                 palletsPorHora: appState.productionData.palletsPorHora
               }}
               BPH={appState.productionData.bph}
+              SKU={appState.productionData.sku}
+              descripccion={appState.productionData.descripccion}
             />
           </div>
           <div>

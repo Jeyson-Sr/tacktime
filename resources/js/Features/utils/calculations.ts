@@ -151,7 +151,7 @@ export const calculateKPIs = (hourlyRecords: HourlyProduction[]): KPI[] => {
  * KPIs por defecto
  */
 const getDefaultKPIs = (): KPI[] => {
-  const labels = ['OEE', 'EQ', 'OPD', 'OR', 'PD', 'QD', 'RD', 'TNP', 'TOTAL'];
+  const labels = ['OEE', 'EQ', 'OPD', 'OR', 'PD', 'QD', 'RD', 'TOTAL'];
   return labels.map(l => ({
     label: l,
     value: l === 'TOTAL' ? 100 : 0,

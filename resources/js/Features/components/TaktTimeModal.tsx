@@ -1,10 +1,15 @@
-/**
- * TaktTimeModal.tsx - Modal con vista de todas las horas de producción
- */
 import React, { useState } from 'react';
-import { X } from 'lucide-react';
+import { X, Sun, Moon, BarChart3, ChevronRight, Clock, Target, CheckCircle2 } from 'lucide-react';
 import { HourlyProduction } from '../types';
 import HourDetailModal from './HourDetailModal';
+
+// --- CONFIGURACIÓN DE ESTILOS SIRVO/AJE ---
+const AJE = {
+  lima: '#D4E157',
+  bosque: '#004B23',
+  fondo: '#F8FAFC',
+  noche: '#1E293B'
+};
 
 interface TaktTimeModalProps {
   onClose: () => void;
@@ -16,14 +21,13 @@ interface TaktTimeModalProps {
 const TaktTimeModal: React.FC<TaktTimeModalProps> = ({ onClose, hourlyRecords, linea, productInfo }) => {
   const [selectedHour, setSelectedHour] = useState<HourlyProduction | null>(null);
 
-  const getStatusColor = (status: string) => {
+  const getStatusStyle = (status: string) => {
     switch (status) {
-      case 'blue': return 'border-l-blue-500 bg-blue-50';
-      case 'yellow': return 'border-l-yellow-400 bg-yellow-50';
-      case 'red': return 'border-l-red-500 bg-red-50';
-      case 'green': return 'border-l-green-500 bg-green-50';
-      case 'gray': return 'border-l-gray-300 bg-gray-50';
-      default: return 'border-l-gray-300 bg-gray-50';
+      case 'green': return { bg: 'bg-green-50', text: 'text-green-700', border: 'border-green-200', dot: 'bg-green-500' };
+      case 'yellow': return { bg: 'bg-yellow-50', text: 'text-yellow-700', border: 'border-yellow-200', dot: 'bg-yellow-500' };
+      case 'red': return { bg: 'bg-red-50', text: 'text-red-700', border: 'border-red-200', dot: 'bg-red-500' };
+      case 'blue': return { bg: 'bg-blue-50', text: 'text-blue-700', border: 'border-blue-200', dot: 'bg-blue-500' };
+      default: return { bg: 'bg-gray-50', text: 'text-gray-400', border: 'border-gray-200', dot: 'bg-gray-300' };
     }
   };
 
@@ -32,42 +36,70 @@ const TaktTimeModal: React.FC<TaktTimeModalProps> = ({ onClose, hourlyRecords, l
 
   return (
     <>
-      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-5 z-50">
-        <div className="bg-white rounded-2xl shadow-2xl max-w-6xl w-full max-h-[90vh] overflow-hidden">
-          <div className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white p-6 relative">
+      <div className="fixed inset-0 z-[150] flex items-center justify-center p-4 bg-[#004B23]/40 backdrop-blur-md">
+        <div className="bg-[#F8FAFC] w-full max-w-7xl rounded-[40px] shadow-2xl flex flex-col max-h-[95vh] overflow-hidden border border-white/20">
+          
+          {/* HEADER SUPERIOR */}
+          <div className="bg-[#004B23] p-8 text-white relative">
             <button
               onClick={onClose}
-              className="absolute top-4 right-4 hover:bg-white hover:bg-opacity-20 rounded-full p-2"
+              className="absolute top-6 right-8 p-3 bg-white/10 hover:bg-white/20 rounded-2xl transition-all"
             >
               <X size={24} />
             </button>
-            <h2 className="text-2xl font-bold mb-1">Takt Time {linea}</h2>
-            <p className="text-sm opacity-90">{productInfo}</p>
-          </div>
-
-          <div className="p-6 overflow-y-auto max-h-[calc(90vh-180px)]">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <ShiftSection 
-                title="📊 PRIMER TURNO (Día)" 
-                data={dayShift} 
-                getStatusColor={getStatusColor}
-                onHourClick={setSelectedHour}
-              />
-              <ShiftSection 
-                title="📈 SEGUNDO TURNO (Noche)" 
-                data={nightShift} 
-                getStatusColor={getStatusColor}
-                onHourClick={setSelectedHour}
-              />
+            
+            <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+              <div className="space-y-1">
+                <div className="flex items-center gap-3">
+                    <div className="bg-[#D4E157] p-2 rounded-xl text-[#004B23]">
+                        <BarChart3 size={24} />
+                    </div>
+                    <h2 className="text-3xl font-black uppercase tracking-tighter">Takt Time {linea}</h2>
+                </div>
+                <p className="text-[#D4E157] font-bold text-xs uppercase tracking-[0.2em] ml-1">{productInfo}</p>
+              </div>
+              
+              <div className="flex gap-4">
+                <div className="bg-white/10 px-6 py-2 rounded-2xl backdrop-blur-sm border border-white/10">
+                    <p className="text-[8px] font-black uppercase opacity-60">Estado de Línea</p>
+                    <p className="text-sm font-bold">OPERATIVA</p>
+                </div>
+              </div>
             </div>
           </div>
 
-          <div className="border-t p-6 bg-gray-50">
+          {/* CUERPO DEL MODAL (Scrollable) */}
+          <div className="flex-1 overflow-y-auto p-8 custom-scrollbar">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
+              
+              {/* SECCIÓN TURNO DÍA */}
+              <ShiftSection 
+                title="Turno Día" 
+                icon={<Sun size={20} className="text-orange-500" />}
+                data={dayShift} 
+                getStatusStyle={getStatusStyle}
+                onHourClick={setSelectedHour}
+              />
+
+              {/* SECCIÓN TURNO NOCHE */}
+              <ShiftSection 
+                title="Turno Noche" 
+                icon={<Moon size={20} className="text-indigo-400" />}
+                data={nightShift} 
+                getStatusStyle={getStatusStyle}
+                onHourClick={setSelectedHour}
+              />
+              
+            </div>
+          </div>
+
+          {/* FOOTER */}
+          <div className="p-6 bg-white border-t border-gray-100 flex justify-center">
             <button
               onClick={onClose}
-              className="w-full bg-gray-600 text-white font-semibold py-3 px-6 rounded-lg hover:bg-gray-700"
+              className="px-10 py-4 bg-[#004B23] text-white font-black rounded-2xl hover:bg-[#003317] transition-all shadow-lg active:scale-95"
             >
-              Cerrar
+              CERRAR TABLERO
             </button>
           </div>
         </div>
@@ -80,44 +112,88 @@ const TaktTimeModal: React.FC<TaktTimeModalProps> = ({ onClose, hourlyRecords, l
   );
 };
 
+// --- SUB-COMPONENTE: SECCIÓN DE TURNO ---
+
 interface ShiftSectionProps {
   title: string;
+  icon: React.ReactNode;
   data: HourlyProduction[];
-  getStatusColor: (status: string) => string;
+  getStatusStyle: (status: string) => any;
   onHourClick: (hour: HourlyProduction) => void;
 }
 
-const ShiftSection: React.FC<ShiftSectionProps> = ({ title, data, getStatusColor, onHourClick }) => (
-  <div>
-    <div className="bg-gray-100 rounded-lg p-3 mb-4">
-      <h3 className="font-bold text-gray-700">{title}</h3>
+const ShiftSection: React.FC<ShiftSectionProps> = ({ title, icon, data, getStatusStyle, onHourClick }) => (
+  <div className="space-y-6">
+    <div className="flex items-center gap-3 ml-2">
+      <div className="p-2 bg-white rounded-xl shadow-sm border border-gray-100">
+        {icon}
+      </div>
+      <h3 className="text-lg font-black text-gray-800 uppercase tracking-tight">{title}</h3>
     </div>
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-      {data.map((item, index) => (
-        <div
-          key={index}
-          onClick={() => item.closed && onHourClick(item)}
-          className={`border-l-4 rounded-lg p-3 ${getStatusColor(item.status)} ${
-            item.closed ? 'cursor-pointer hover:shadow-md transition-shadow' : 'opacity-50'
-          }`}
-        >
-          <div className="text-xs font-semibold text-gray-600 mb-1">
-            Hr: {item.hour}
+
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      {data.map((item, index) => {
+        const style = getStatusStyle(item.status);
+        const cumplimiento = item.estimado > 0 ? (item.producido / item.estimado) * 100 : 0;
+
+        return (
+          <div
+            key={index}
+            onClick={() => item.closed && onHourClick(item)}
+            className={`relative group rounded-[28px] p-5 border-2 transition-all overflow-hidden
+              ${item.closed 
+                ? `${style.bg} ${style.border} cursor-pointer hover:shadow-xl hover:-translate-y-1` 
+                : 'bg-gray-50 border-gray-100 opacity-60 grayscale'
+              }`}
+          >
+            {/* Cabecera de la Tarjeta de Hora */}
+            <div className="flex justify-between items-start mb-4">
+                <div className="flex items-center gap-2">
+                    <div className={`w-2 h-2 rounded-full ${style.dot} animate-pulse`} />
+                    <span className="text-xl font-mono font-black text-gray-800">HR: {item.hour}</span>
+                </div>
+                {item.closed && (
+                    <div className="bg-white/50 p-1.5 rounded-lg">
+                        <ChevronRight size={16} className={style.text} />
+                    </div>
+                )}
+            </div>
+
+            {/* Métricas de la Hora */}
+            <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-0.5">
+                    <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest">Estimado</p>
+                    <p className="text-lg font-mono font-bold text-gray-700">{item.estimado}</p>
+                </div>
+                <div className="space-y-0.5">
+                    <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest">Producido</p>
+                    <p className={`text-lg font-mono font-black ${style.text}`}>{item.producido}</p>
+                </div>
+            </div>
+
+            {/* Barra de Progreso / Cumplimiento */}
+            <div className="mt-4 pt-4 border-t border-black/5">
+                <div className="flex justify-between items-end mb-1.5">
+                    <span className="text-[9px] font-black text-gray-400 uppercase">Cumplimiento</span>
+                    <span className={`text-xs font-black font-mono ${style.text}`}>{cumplimiento.toFixed(1)}%</span>
+                </div>
+                <div className="h-2 w-full bg-black/5 rounded-full overflow-hidden">
+                    <div 
+                        className={`h-full transition-all duration-1000 ${style.dot.replace('bg-', 'bg-')}`}
+                        style={{ width: `${Math.min(cumplimiento, 100)}%`, backgroundColor: 'currentColor' }}
+                    />
+                </div>
+            </div>
+
+            {/* Overlay para horas no cerradas */}
+            {!item.closed && (
+                <div className="absolute inset-0 flex items-center justify-center bg-white/40 backdrop-blur-[1px]">
+                    <Clock size={20} className="text-gray-300" />
+                </div>
+            )}
           </div>
-          <div className="text-xs text-gray-700">
-            PH Estimado: <span className="font-bold">{item.estimado}</span>
-          </div>
-          <div className="text-xs text-gray-700">
-            PH Producido: <span className="font-bold">{item.producido}</span>
-          </div>
-          <div className="text-xs text-gray-700">
-            Cumplimiento: <span className="font-bold">{((item.producido / item.estimado)* 100).toFixed(1)}%</span>
-          </div>
-          {item.closed && (
-            <div className="text-xs text-indigo-600 mt-1">👁️ Click para ver detalle</div>
-          )}
-        </div>
-      ))}
+        );
+      })}
     </div>
   </div>
 );
