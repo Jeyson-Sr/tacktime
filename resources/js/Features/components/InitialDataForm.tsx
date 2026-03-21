@@ -203,9 +203,42 @@ const InitialDataForm: React.FC<{ onSubmit: (data: any) => void }> = ({ onSubmit
       descripccion: productoSel.descripcion,
     };
 
+
+    //simulacion de datos existentes del numero de la op registrada
+     if (!validarOpExistente(opValue)) {
+        console.log("🚀 OP válida:", opValue);
+      } else {
+        alert("La OP fue resgistrada previamente.");
+        setOpValue("");
+        return;
+      }
+    //----------------------------------------------
+
     console.log("🚀 Datos de Producción Inicializados:", finalData);
     onSubmit(finalData);
   };
+
+  function handleChangeOpValue(e: React.ChangeEvent<HTMLInputElement>) {
+    if (!e.target.value.length || e.target.value.length > 6) {
+      setOpValue("");
+      alert("El valor de la OP debe tener mas 6 dígitos.");
+    } else {
+      setOpValue(e.target.value);
+    }
+  }
+
+  //Funcion validadora de la OP
+  function validarOpExistente(input: string): boolean | null {
+    const Op = ["2026087687", "2026086007", "2026000876", "2026000001"]
+    const currentYear = new Date().getFullYear().toString();
+    const rawInput = input.replace(/\D/g, '').slice(0, 6);
+    const padded = rawInput.padStart(6, '0');
+    const fullOp = currentYear + padded;
+    const valor = Op.includes(fullOp) ;
+    return valor;
+  }
+
+
 
   return (
     <div className="min-h-screen  p-4 md:p-8">
@@ -230,7 +263,6 @@ const InitialDataForm: React.FC<{ onSubmit: (data: any) => void }> = ({ onSubmit
             label="Ingeniero" 
             options={options.ingenieros} 
             value={ingeniero} 
-            // onChange={setIngeniero} 
             icon={User}
             variant="label"
           />
@@ -316,25 +348,25 @@ const InitialDataForm: React.FC<{ onSubmit: (data: any) => void }> = ({ onSubmit
                    type="text" 
                    className="w-full outline-none font-mono font-bold text-2xl text-blue-600 placeholder-gray-100" 
                    value={opValue} 
-                   onChange={(e) => setOpValue(e.target.value)}
-                   placeholder="2026..."
+                   onChange={handleChangeOpValue}
+                   placeholder={new Date().getFullYear().toString() + '...'}
                 />
               </div>
             </div>
           </div>
 
           {/* Card Pallets Visual (Círculo/Impacto) */}
-          <div className="p-8 bg-white rounded-[40px] border-2 border-dashed border-green-200 flex flex-col items-center justify-center min-w-[300px] shadow-sm relative overflow-hidden group">
+          <div className="p-8 bg-white rounded-[40px] border-2 border-dashed border-green-200 flex flex-col items-center justify-center min-w-[250px] max-h-[220px] shadow-sm relative overflow-hidden group m-auto">
             <div className="absolute -right-4 -bottom-4 text-[#004B23]/5 group-hover:scale-110 transition-transform duration-700">
               <HardDrive size={160} />
             </div>
-            <p className="text-gray-400 text-[11px] font-black uppercase tracking-[0.2em] mb-2">Pallets / Hora</p>
-            <span className="text-8xl font-black text-[#004B23] drop-shadow-sm leading-none">
+            <p className="text-gray-400 text-[11px] font-black uppercase tracking-[0.2em] mb-8">Pallets / Hora</p>
+            <span className="text-6xl font-black text-[#004B23] drop-shadow-sm leading-none">
                 {palletsPorHora}
             </span>
-            <div className="mt-6 flex items-center gap-2 text-[10px] font-bold text-green-700 bg-green-50 px-4 py-1.5 rounded-full border border-green-100">
+            <div className="mt-6 flex items-center gap-2 text-[10px] font-bold text-green-700 bg-green-50 px-2 py-1.5 rounded-full border border-green-100">
                 <Clock size={12} />
-                ESTIMACIÓN DE SISTEMA
+                PALLET ESTIMADO
             </div>
           </div>
         </div>
