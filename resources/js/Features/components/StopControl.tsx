@@ -96,7 +96,7 @@ const StopControl: React.FC<StopControlProps> = ({
   const handleProducidoChange = (value: number) => {
     const justificar = calculateJustificar(currentHour.estimado, value);
     const status = calculateStatus(value, currentHour.estimado);
-    onUpdateHour({ producido: value, justificar, status });
+    onUpdateHour({ producido: value, justificar: Number(justificar.toFixed(1)), status });
   };
 
   const handleAddStop = () => {
@@ -107,7 +107,7 @@ const StopControl: React.FC<StopControlProps> = ({
 
     const totalActual = currentHour.stops.reduce((acc, s) => acc + s.tiempoMinutos, 0);
     if ((totalActual + newStop.tiempoMinutos) > (currentHour.justificar + 0.1)) {
-      alert(`Error: No puede justificar más de los ${currentHour.justificar.toFixed(0)} min requeridos.`);
+      alert(`Error: No puede justificar más de los ${currentHour.justificar.toFixed(1)} min requeridos.`);
       return;
     }
 
@@ -204,14 +204,14 @@ const StopControl: React.FC<StopControlProps> = ({
 
         <MetricCard 
             label="A Justificar" 
-            value={`${currentHour.justificar.toFixed(0)} min`} 
+            value={`${currentHour.justificar.toFixed(1)} min`} 
             icon={AlertCircle} 
             color={currentHour.justificar > 0 ? "red" : "gray"} 
         />
         
         <MetricCard 
             label="Justificado" 
-            value={`${currentHour.justificado.toFixed(0)} min`} 
+            value={`${currentHour.justificado.toFixed(1)} min`} 
             icon={Settings} 
             color={currentHour.justificar === currentHour.justificado && currentHour.justificar > 0 ? "green" : "orange"} 
         />
