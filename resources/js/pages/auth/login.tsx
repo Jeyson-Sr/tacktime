@@ -52,8 +52,10 @@ export default function Login({
                                     required
                                     autoFocus
                                     tabIndex={1}
+                                    pattern=".+@ecaral\.pe$"
+                                    title="Debe ser un correo con dominio @ecaral.pe"
                                     autoComplete="email"
-                                    placeholder="correo@ejemplo.com"
+                                    placeholder="correo@ecaral.pe"
                                     className="rounded-xl border-[1.5px] border-[#c9e4d0] bg-white px-4 py-3 text-sm font-medium text-[#1a2e1f] placeholder:text-[#8aab93] focus:border-[#f4a318] focus:ring-2 focus:ring-[#f4a318]/15 focus-visible:ring-[#f4a318]/15 focus-visible:border-[#f4a318] transition-all"
                                 />
                                 <InputError message={errors.email} className="mt-1 text-xs text-red-500" />
