@@ -24,10 +24,10 @@ export default function Login({
 }: Props) {
     return (
         <AuthLayout
-            title="Log in to your account"
-            description="Enter your email and password below to log in"
+            title="Inicia sesión en tu cuenta"
+            description="Ingresa tu correo electrónico y contraseña a continuación para iniciar sesión"
         >
-            <Head title="Log in" />
+            <Head title="Iniciar sesión" />
 
             <Form
                 {...store.form()}
@@ -36,9 +36,15 @@ export default function Login({
             >
                 {({ processing, errors }) => (
                     <>
-                        <div className="grid gap-6">
-                            <div className="grid gap-2">
-                                <Label htmlFor="email">Email address</Label>
+                        <div className="grid gap-4">
+                            {/* Email */}
+                            <div className="grid gap-1.5">
+                                <Label
+                                    htmlFor="email"
+                                    className="text-[10px] font-bold uppercase tracking-[1px] text-[#8aab93]"
+                                >
+                                    Correo electrónico
+                                </Label>
                                 <Input
                                     id="email"
                                     type="email"
@@ -47,21 +53,28 @@ export default function Login({
                                     autoFocus
                                     tabIndex={1}
                                     autoComplete="email"
-                                    placeholder="email@example.com"
+                                    placeholder="correo@ejemplo.com"
+                                    className="rounded-xl border-[1.5px] border-[#c9e4d0] bg-white px-4 py-3 text-sm font-medium text-[#1a2e1f] placeholder:text-[#8aab93] focus:border-[#f4a318] focus:ring-2 focus:ring-[#f4a318]/15 focus-visible:ring-[#f4a318]/15 focus-visible:border-[#f4a318] transition-all"
                                 />
-                                <InputError message={errors.email} />
+                                <InputError message={errors.email} className="mt-1 text-xs text-red-500" />
                             </div>
 
-                            <div className="grid gap-2">
+                            {/* Password */}
+                            <div className="grid gap-1.5">
                                 <div className="flex items-center">
-                                    <Label htmlFor="password">Password</Label>
+                                    <Label
+                                        htmlFor="password"
+                                        className="text-[10px] font-bold uppercase tracking-[1px] text-[#8aab93]"
+                                    >
+                                        Contraseña
+                                    </Label>
                                     {canResetPassword && (
                                         <TextLink
                                             href={request()}
-                                            className="ml-auto text-sm"
                                             tabIndex={5}
+                                            className="ml-auto text-[11px] font-bold text-[#2d6a4f] hover:text-[#1b4332] transition-colors"
                                         >
-                                            Forgot password?
+                                            ¿Olvidaste tu contraseña?
                                         </TextLink>
                                     )}
                                 </div>
@@ -72,37 +85,50 @@ export default function Login({
                                     required
                                     tabIndex={2}
                                     autoComplete="current-password"
-                                    placeholder="Password"
+                                    placeholder="Contraseña"
+                                    className="rounded-xl border-[1.5px] border-[#c9e4d0] bg-white px-4 py-3 text-sm font-medium text-[#1a2e1f] placeholder:text-[#8aab93] focus:border-[#f4a318] focus:ring-2 focus:ring-[#f4a318]/15 focus-visible:ring-[#f4a318]/15 focus-visible:border-[#f4a318] transition-all"
                                 />
-                                <InputError message={errors.password} />
+                                <InputError message={errors.password} className="mt-1 text-xs text-red-500" />
                             </div>
 
-                            <div className="flex items-center space-x-3">
+                            {/* Remember me */}
+                            <div className="flex items-center gap-2.5">
                                 <Checkbox
                                     id="remember"
                                     name="remember"
                                     tabIndex={3}
+                                    className="rounded border-[#c9e4d0] data-[state=checked]:bg-[#1b4332] data-[state=checked]:border-[#1b4332]"
                                 />
-                                <Label htmlFor="remember">Remember me</Label>
+                                <Label
+                                    htmlFor="remember"
+                                    className="text-[11px] font-semibold text-[#3d5a47] cursor-pointer"
+                                >
+                                    Recuérdame
+                                </Label>
                             </div>
 
+                            {/* Submit */}
                             <Button
                                 type="submit"
-                                className="mt-4 w-full"
                                 tabIndex={4}
                                 disabled={processing}
                                 data-test="login-button"
+                                className="mt-2 w-full rounded-2xl bg-[#1b4332] py-5 text-sm font-bold uppercase tracking-[2px] text-white shadow-[0_4px_16px_rgba(27,67,50,0.25)] transition-all hover:opacity-90 hover:-translate-y-px active:translate-y-0 disabled:bg-[#d5dfd8] disabled:text-[#9db5a3] disabled:shadow-none"
                             >
-                                {processing && <Spinner />}
-                                Log in
+                                {processing && <Spinner className="mr-2 h-4 w-4" />}
+                                Iniciar sesión
                             </Button>
                         </div>
 
                         {canRegister && (
-                            <div className="text-center text-sm text-muted-foreground">
-                                Don't have an account?{' '}
-                                <TextLink href={register()} tabIndex={5}>
-                                    Sign up
+                            <div className="text-center text-xs text-[#8aab93]">
+                                ¿No tienes una cuenta?{' '}
+                                <TextLink
+                                    href={register()}
+                                    tabIndex={5}
+                                    className="font-bold text-[#2d6a4f] hover:text-[#1b4332] transition-colors"
+                                >
+                                    Regístrate
                                 </TextLink>
                             </div>
                         )}
@@ -111,7 +137,7 @@ export default function Login({
             </Form>
 
             {status && (
-                <div className="mb-4 text-center text-sm font-medium text-green-600">
+                <div className="mb-4 text-center text-xs font-bold uppercase tracking-[1px] text-[#2d6a4f]">
                     {status}
                 </div>
             )}

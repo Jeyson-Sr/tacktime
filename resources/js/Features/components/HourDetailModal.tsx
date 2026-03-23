@@ -69,8 +69,8 @@ const HourDetailModal: React.FC<HourDetailModalProps> = ({ hour, onClose }) => {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <MetricBox label="PH Estimado" value={hour.estimado} color="blue" icon={<Activity size={14}/>} />
             <MetricBox label="PH Producido" value={hour.producido} color="green" icon={<ArrowRightCircle size={14}/>} />
-            <MetricBox label="A Justificar" value={`${hour.justificar.toFixed(0)} min`} color="red" icon={<AlertCircle size={14}/>} />
-            <MetricBox label="Justificado" value={`${hour.justificado.toFixed(0)} min`} color="lime" icon={<FileText size={14}/>} />
+            <MetricBox label="A Justificar" value={`${hour.justificar.toFixed(1)} min`} color="red" icon={<AlertCircle size={14}/>} />
+            <MetricBox label="Justificado" value={`${hour.justificado.toFixed(1)} min`} color="lime" icon={<FileText size={14}/>} />
           </div>
 
           {/* SECCIÓN 2: LOG DE PARADAS */}
