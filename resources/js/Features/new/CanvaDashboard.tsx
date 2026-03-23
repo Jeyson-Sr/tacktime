@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { router } from '@inertiajs/react';
 import {
   Plus, Home, Folder, LayoutGrid, Award, Sparkles, MoreHorizontal,
   Bell, Trash2, Users, Search, SlidersHorizontal, ChevronDown, Star, Image as ImageIcon, FileText, Video,
@@ -749,6 +750,16 @@ const getAvatarText = (user: any): string => {
 
 // auth is already declared above; skip re-declaration
 
+const handleLogout = () => {
+
+
+    // 2. Ejecutas la petición POST
+    router.post('/logout', {}, {
+        onSuccess: () => {
+            // Inertia se encarga de la redirección automática
+        }
+    });
+};
 
   return (
     <div className="flex h-screen bg-gray-50 font-sans overflow-hidden">
@@ -818,7 +829,10 @@ const getAvatarText = (user: any): string => {
             {getAvatarText((auth as any)?.user)}
             
           </button>
-          <button className="flex flex-col items-center gap-0.5 hover:text-white" style={{ color: AJE.bosque }}>
+          <button
+          onClick={handleLogout}
+           className="flex flex-col items-center gap-0.5 hover:text-white cursor-pointer" 
+           style={{ color: AJE.bosque }}>
             <Trash2 size={18} strokeWidth={1.8} />
             <span className="text-[9px] font-medium">Papelera</span>
           </button>
