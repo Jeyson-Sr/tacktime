@@ -57,21 +57,19 @@ export const calculateJustificado = (
  */
 export const calculateKPIs = (hourlyRecords: HourlyProduction[]): KPI[] => {
   const closedHours = hourlyRecords.filter(h => h.closed);
-  
+
   if (closedHours.length === 0) {
     return getDefaultKPIs();
   }
-  
-  // Función auxiliar: Suma simple de minutos por tipo
-  const sumMinutosPorTipo = (tipo: string) => {
-    return closedHours.reduce((sum, h) => {
-      return sum + h.stops
-        .filter(s => s.tipo === tipo)
-        .reduce((s, stop) => s + stop.tiempoMinutos, 0);
-    }, 0);
-  };
 
-  // 1. Obtención de minutos por categoría
+  const sumMinutosPorTipo = (tipo: string) =>
+    closedHours.reduce((sum, h) =>
+      sum + h.stops
+        .filter(s => s.tipo === tipo)
+        .reduce((s, stop) => s + stop.tiempoMinutos, 0),
+      0
+    );
+
   const minsEQ  = sumMinutosPorTipo('EQUIPO');
   const minsOPD = sumMinutosPorTipo('OPERATIVAS');
   const minsOR  = sumMinutosPorTipo('ORGANIZACIONALES');
@@ -79,70 +77,66 @@ export const calculateKPIs = (hourlyRecords: HourlyProduction[]): KPI[] => {
   const minsQD  = sumMinutosPorTipo('PERDIDAS DE CALIDAD');
   const minsRD  = sumMinutosPorTipo('RUTINARIAS');
   const minsTNP = sumMinutosPorTipo('TIEMPO NO PROGRAMADO');
-  
-  // 2. Definición de Tiempos Base
-  const tiempoTotalBruto = closedHours.length * 60; // Base total (ej. 480 min por turno)
-  const tiempoEfectivo = tiempoTotalBruto - minsTNP; // Base real para OEE e Impactos
 
-  // 3. Totales de producción
-  const totalEstimadoBruto = closedHours.reduce((sum, h) => sum + h.estimado, 0);
-  const totalProducido = closedHours.reduce((sum, h) => sum + h.producido, 0);
+  // 1. Base bruta
+  const tiempoTotalBruto = closedHours.length * 60;
 
-  /**
-   * AJUSTE DE OEE:
-   * El estimado se reduce proporcionalmente al tiempo que NO estuvo programado.
-   */
-  const factorTiempoEfectivo = tiempoTotalBruto > 0 ? (tiempoEfectivo / tiempoTotalBruto) : 0;
-  const totalEstimadoAjustado = totalEstimadoBruto * factorTiempoEfectivo;
+  // 2. Tiempo efectivo = base − TNP → este es el denominador del 100%
+  const tiempoEfectivo = tiempoTotalBruto - minsTNP;
 
-  const oee = totalEstimadoAjustado > 0 
-    ? (totalProducido / totalEstimadoAjustado) * 100 
+  // 3. Tiempo productivo = efectivo − todas las paradas
+  const totalPerdidas = minsEQ + minsOPD + minsOR + minsPD + minsQD + minsRD;
+  const tiempoProductivo = Math.max(0, tiempoEfectivo - totalPerdidas);
+
+  // 4. OEE basado puramente en tiempo
+  const oee = tiempoEfectivo > 0
+    ? (tiempoProductivo / tiempoEfectivo) * 100
     : 0;
 
-  // 4. Cálculo de impactos (Sobre el tiempo efectivo disponible)
-  const calcImpacto = (mins: number) => 
+  // 5. Impacto de cada tipo = sus minutos / tiempo efectivo × 100
+  const calcImpacto = (mins: number) =>
     tiempoEfectivo > 0 ? (mins / tiempoEfectivo) * 100 : 0;
 
   return [
-    { 
-      label: 'OEE', 
-      value: Math.min(oee, 100), // Capado a 100% para evitar excedentes visuales
-      status: oee >= 85 ? 'success' : oee >= 70 ? 'warning' : 'danger' 
+    {
+      label: 'OEE',
+      value: Math.min(oee, 100),
+      status: oee >= 85 ? 'success' : oee >= 70 ? 'warning' : 'danger'
     },
-    { 
-      label: 'EQ', 
-      value: calcImpacto(minsEQ), 
-      status: calcImpacto(minsEQ) <= 5 ? 'success' : 'danger' 
+    {
+      label: 'EQ',
+      value: calcImpacto(minsEQ),
+      status: calcImpacto(minsEQ) <= 5 ? 'success' : 'danger'
     },
-    { 
-      label: 'OPD', 
-      value: calcImpacto(minsOPD), 
-      status: calcImpacto(minsOPD) <= 5 ? 'success' : 'danger' 
+    {
+      label: 'OPD',
+      value: calcImpacto(minsOPD),
+      status: calcImpacto(minsOPD) <= 5 ? 'success' : 'danger'
     },
-    { 
-      label: 'OR', 
-      value: calcImpacto(minsOR), 
-      status: calcImpacto(minsOR) <= 2 ? 'success' : 'warning' 
+    {
+      label: 'OR',
+      value: calcImpacto(minsOR),
+      status: calcImpacto(minsOR) <= 2 ? 'success' : 'warning'
     },
-    { 
-      label: 'PD', 
-      value: calcImpacto(minsPD), 
-      status: 'warning' 
+    {
+      label: 'PD',
+      value: calcImpacto(minsPD),
+      status: 'warning'
     },
-    { 
-      label: 'QD', 
-      value: calcImpacto(minsQD), 
-      status: calcImpacto(minsQD) <= 2 ? 'success' : 'danger' 
+    {
+      label: 'QD',
+      value: calcImpacto(minsQD),
+      status: calcImpacto(minsQD) <= 2 ? 'success' : 'danger'
     },
-    { 
-      label: 'RD', 
-      value: calcImpacto(minsRD), 
-      status: 'success' 
+    {
+      label: 'RD',
+      value: calcImpacto(minsRD),
+      status: 'success'
     },
-    { 
-      label: 'TOTAL', 
-      value: 100, 
-      status: 'total' 
+    {
+      label: 'TOTAL',
+      value: 100,
+      status: 'total'
     }
   ];
 };
