@@ -17,6 +17,8 @@ import { usePage } from '@inertiajs/react';
 import RevealList from '../utils/RevealList';
 import embotelladoraCaral from '../../../img/embotelladora_caral.webp';
 import ProductionControl from '../ProductionControl';
+import IdleLogoutWatcher from '../Auth/IdleLogoutWatcher';
+
 
 // ─── TYPES ────────────────────────────────────────────────────────────────────
 type TabId = 'inicio' | 'proyectos' | 'plantillas' | 'marca' | 'ia' | 'mas';
@@ -750,6 +752,9 @@ const getAvatarText = (user: any): string => {
 
 // auth is already declared above; skip re-declaration
 
+
+
+
 const handleLogout = () => {
 
 
@@ -975,6 +980,7 @@ const handleLogout = () => {
       >
         ?
       </button>
+      <IdleLogoutWatcher />
     </div>
   );
 }
