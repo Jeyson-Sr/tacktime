@@ -6,14 +6,16 @@ import { Timer, AlertTriangle } from 'lucide-react';
     // const TOTAL_IDLE_TIME = 10 * 60; // 10 minutos en segundos
     // const WARNING_TIME = 2 * 60;    // Mostrar aviso cuando falten 2 min
     
-    const TOTAL_IDLE_TIME = 2 * 60; // 2 minutos en segundos
-    const WARNING_TIME = 1 * 60;    // Mostrar aviso cuando falte 1 min
+    const TOTAL_IDLE_TIME = 1 * 60; // 2 minutos en segundos
+    const WARNING_TIME = 1 * 30;    // Mostrar aviso cuando falte 1 min
     
     const [timeLeft, setTimeLeft] = useState(TOTAL_IDLE_TIME);
     const [showWarning, setShowWarning] = useState(false);
 
     const handleLogout = useCallback(() => {
         router.post('/logout');
+        // Redirigir a la página de login
+        router.visit('/login');
     }, []);
 
     useEffect(() => {
