@@ -13,6 +13,7 @@ import { HourlyProduction, StopRecord, HourComments } from '../types';
 import { calculateStatus, calculateJustificar, calculateJustificado, generateId } from '../utils/calculations';
 import StopCodeSearchModal from './StopCodeSearchModal';
 import { fetchStopCodes } from '../database';
+import Alert from '../Alert';
 
 // --- CONFIGURACIÓN DE ESTILOS SIRVO/AJE ---
 const AJE = {
@@ -74,6 +75,18 @@ const StopControl: React.FC<StopControlProps> = ({
     calidad: currentHour.comments?.calidad || ''
   });
 
+    const [alerta, setAlerta] = useState('');
+  
+  
+  useEffect(() => {
+    if (alerta.trim()) {
+      const timer = setTimeout(() => {
+        setAlerta('');
+      }, 20000);
+      return () => clearTimeout(timer);
+    }
+  }, [alerta]);
+
   useEffect(() => {
     const loadCatalog = async () => {
       const data = await fetchStopCodes();
@@ -101,13 +114,15 @@ const StopControl: React.FC<StopControlProps> = ({
 
   const handleAddStop = () => {
     if (!newStop.codigo || newStop.tiempoMinutos <= 0) {
-      alert('Faltan datos en la parada (Código o Tiempo)');
+      setAlerta("");
+      setAlerta('Faltan datos en la parada (Código o Tiempo)');
       return;
     }
 
     const totalActual = currentHour.stops.reduce((acc, s) => acc + s.tiempoMinutos, 0);
     if ((totalActual + newStop.tiempoMinutos) > (currentHour.justificar)) {
-      alert(`Error: No puede justificar más de los ${currentHour.justificar.toFixed(1)} min requeridos.`);
+      setAlerta("");
+      setAlerta(`Error: No puede justificar más de los ${currentHour.justificar.toFixed(1)} min requeridos.`);
       return;
     }
 
@@ -131,12 +146,14 @@ const StopControl: React.FC<StopControlProps> = ({
 
   const handleFinalizar = () => {
     if (!currentHour.producido || currentHour.producido < 0) {
-      alert('Debe ingresar la cantidad producida.');
+      setAlerta("");
+      setAlerta('Debe ingresar la cantidad producida.');
       return;
     }
 
     if (!comments.mnf) {
-      alert('Debe ingresar comentarios en MNF');
+      setAlerta("");
+      setAlerta('Debe ingresar comentarios en MNF');
       return;
     }
   setComments({  
@@ -158,6 +175,9 @@ const StopControl: React.FC<StopControlProps> = ({
 
   return (
     <div className="max-w-5xl mx-auto space-y-6 pb-10">
+       {alerta?.trim() && (
+              <Alert variant="error" title="El campo es obligatorio" message={alerta} />
+            )}
       
       {/* HEADER DE LA HORA */}
       <div className="flex flex-col md:flex-row justify-between items-center bg-white p-6 rounded-[32px] border border-gray-100 shadow-2xl gap-4">

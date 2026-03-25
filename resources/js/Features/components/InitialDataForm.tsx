@@ -5,6 +5,7 @@ import {
   fetchOperators,
 } from '../database';
 import { usePage } from '@inertiajs/react';
+import Alert from '../Alert';
 
 // --- CONFIGURACIÓN DE ESTILOS AJE ---
 const AJE = {
@@ -128,9 +129,19 @@ const InitialDataForm: React.FC<{ onSubmit: (data: any) => void }> = ({ onSubmit
     operadores: [] as any[],
     lineas: ['LINEA 1', 'LINEA 2', 'LINEA 3', 'LINEA 4', 'LINEA 5', 'LINEA 8', 'LINEA 9', 'LINEA 10']
   });
-
+  
   const [loading, setLoading] = useState(false);
+  const [alerta, setAlerta] = useState('');
 
+
+useEffect(() => {
+  if (alerta.trim()) {
+    const timer = setTimeout(() => {
+      setAlerta('');
+    }, 20000);
+    return () => clearTimeout(timer);
+  }
+}, [alerta]);
   const { auth } = usePage().props;
 
   // Carga de personal desde database.ts
@@ -179,9 +190,10 @@ const InitialDataForm: React.FC<{ onSubmit: (data: any) => void }> = ({ onSubmit
 
   // Manejo de envío final con la estructura exacta solicitada
   const handleSubmit = (e: React.FormEvent) => {
+
     e.preventDefault();
     if (!productoSel || !ingeniero || !operador) {
-      alert("Por favor completa los datos de Ingeniero, Operador y selecciona un Producto.");
+      setAlerta("Por favor completa los datos de Ingeniero, Operador y selecciona un Producto.");
       return;
     }
 
@@ -206,9 +218,10 @@ const InitialDataForm: React.FC<{ onSubmit: (data: any) => void }> = ({ onSubmit
 
     //simulacion de datos existentes del numero de la op registrada
      if (!validarOpExistente(opValue)) {
-        console.log("🚀 OP válida:", opValue);
+        // console.log("🚀 OP válida:", opValue);
       } else {
-        alert("La OP fue resgistrada previamente.");
+        setAlerta("");
+        setAlerta("La OP fue resgistrada previamente.");
         setOpValue("");
         return;
       }
@@ -242,6 +255,9 @@ const InitialDataForm: React.FC<{ onSubmit: (data: any) => void }> = ({ onSubmit
 
   return (
     <div className="min-h-screen  p-4 md:p-8">
+      {alerta?.trim() && (
+        <Alert variant="error" title="El campo es obligatorio" message={alerta} />
+      )}
       <div className="max-w-6xl mx-auto space-y-8">
         
         {/* Cabecera */}
