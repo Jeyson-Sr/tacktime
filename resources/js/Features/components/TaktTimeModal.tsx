@@ -33,6 +33,56 @@ const TaktTimeModal: React.FC<TaktTimeModalProps> = ({ onClose, hourlyRecords, l
 
   const dayShift = hourlyRecords.slice(0, 12);
   const nightShift = hourlyRecords.slice(12, 24);
+// ─── TURNO DÍA ───────────────────────────────────────────────
+const calcularRatioDia = () => {
+  const horasCerradas = dayShift.filter(item => item.closed);
+  const horasConProduccion = horasCerradas.filter(item => item.producido > 0);
+
+  if (horasConProduccion.length === 0) return 0;
+
+  const totalProducido   = horasConProduccion.reduce((sum, item) => sum + item.producido, 0);
+  const estimadoPorHora  = horasConProduccion[0].estimado;          // todos son iguales
+  const totalEstimado    = horasConProduccion.length * estimadoPorHora;
+
+  return totalEstimado > 0 ? Number((totalProducido / totalEstimado).toFixed(2)) : 0;
+};
+
+// ─── TURNO NOCHE ─────────────────────────────────────────────
+const calcularRatioNoche = () => {
+  const horasCerradas = nightShift.filter(item => item.closed);
+  const horasConProduccion = horasCerradas.filter(item => item.producido > 0);
+
+  if (horasConProduccion.length === 0) return 0;
+
+  const totalProducido   = horasConProduccion.reduce((sum, item) => sum + item.producido, 0);
+  const estimadoPorHora  = horasConProduccion[0].estimado;
+  const totalEstimado    = horasConProduccion.length * estimadoPorHora;
+
+  return totalEstimado > 0 ? Number((totalProducido / totalEstimado).toFixed(2)) : 0;
+};
+
+// ─── DÍA COMPLETO (24h: día + noche) ─────────────────────────
+const calcularRatio24h = () => {
+  const todasLasHoras = [...dayShift, ...nightShift];
+  const horasCerradas = todasLasHoras.filter(item => item.closed);
+  const horasConProduccion = horasCerradas.filter(item => item.producido > 0);
+
+  if (horasConProduccion.length === 0) return 0;
+
+  const totalProducido   = horasConProduccion.reduce((sum, item) => sum + item.producido, 0);
+  const estimadoPorHora  = horasConProduccion[0].estimado;
+  const totalEstimado    = horasConProduccion.length * estimadoPorHora;
+
+  return totalEstimado > 0 ? Number((totalProducido / totalEstimado).toFixed(2)) : 0;
+};
+
+const ratioDia   = calcularRatioDia();
+const ratioNoche = calcularRatioNoche();
+const cump        = calcularRatio24h();   // OEE = cumplimiento del día completo
+
+
+
+
 
   return (
     <>
@@ -48,8 +98,8 @@ const TaktTimeModal: React.FC<TaktTimeModalProps> = ({ onClose, hourlyRecords, l
               <X size={24} />
             </button>
             
-            <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
-              <div className="space-y-1">
+            <div className="flex flex-col md:flex-row md:items-end justify-between gap-10">
+              <div className="space-y-2">
                 <div className="flex items-center gap-3">
                     <div className="bg-[#D4E157] p-2 rounded-xl text-[#004B23]">
                         <BarChart3 size={24} />
@@ -59,10 +109,10 @@ const TaktTimeModal: React.FC<TaktTimeModalProps> = ({ onClose, hourlyRecords, l
                 <p className="text-[#D4E157] font-bold text-xs uppercase tracking-[0.2em] ml-1">{productInfo}</p>
               </div>
               
-              <div className="flex gap-4">
+              <div className="flex gap-4 mr-15">
                 <div className="bg-white/10 px-6 py-2 rounded-2xl backdrop-blur-sm border border-white/10">
-                    <p className="text-[8px] font-black uppercase opacity-60">Estado de Línea</p>
-                    <p className="text-sm font-bold">OPERATIVA</p>
+                    <p className="text-[15px] font-black uppercase opacity-60">CUMPLIMIENTO TOTAL</p>
+                    <p className="text-sm font-bold">{(cump * 100).toFixed(1)} %</p>
                 </div>
               </div>
             </div>
@@ -79,6 +129,7 @@ const TaktTimeModal: React.FC<TaktTimeModalProps> = ({ onClose, hourlyRecords, l
                 data={dayShift} 
                 getStatusStyle={getStatusStyle}
                 onHourClick={setSelectedHour}
+                cump={ratioDia}
               />
 
               {/* SECCIÓN TURNO NOCHE */}
@@ -88,6 +139,7 @@ const TaktTimeModal: React.FC<TaktTimeModalProps> = ({ onClose, hourlyRecords, l
                 data={nightShift} 
                 getStatusStyle={getStatusStyle}
                 onHourClick={setSelectedHour}
+                cump={ratioNoche}
               />
               
             </div>
@@ -120,15 +172,24 @@ interface ShiftSectionProps {
   data: HourlyProduction[];
   getStatusStyle: (status: string) => any;
   onHourClick: (hour: HourlyProduction) => void;
+  cump: number;
 }
 
-const ShiftSection: React.FC<ShiftSectionProps> = ({ title, icon, data, getStatusStyle, onHourClick }) => (
+const ShiftSection: React.FC<ShiftSectionProps> = ({ title, icon, data, getStatusStyle, onHourClick, cump }) => (
   <div className="space-y-6">
-    <div className="flex items-center gap-3 ml-2">
-      <div className="p-2 bg-white rounded-xl shadow-sm border border-gray-100">
-        {icon}
+    <div className='flex items-center justify-between gap-3'>
+      <div className="flex items-center gap-3 ml-2">
+        <div className="p-2 bg-white rounded-xl shadow-sm border border-gray-100">
+          {icon}
+        </div>
+        <h3 className="text-lg font-black text-gray-800 uppercase tracking-tight">{title}</h3>
       </div>
-      <h3 className="text-lg font-black text-gray-800 uppercase tracking-tight">{title}</h3>
+      <div className="flex items-center gap-3 ml-2 ">
+        <div className="bg-white/10 px-6 py-2 rounded-2xl backdrop-blur-sm border bg-gray-100">
+          <p className="text-[15px] font-black uppercase opacity-60">CUMP</p>
+          <p className="text-sm font-bold">{(cump * 100).toFixed(1)} %</p>
+        </div>
+      </div>
     </div>
 
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
