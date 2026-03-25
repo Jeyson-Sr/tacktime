@@ -29,6 +29,17 @@ const KPISection: React.FC<KPISectionProps> = ({ kpis }) => {
         return { bar: 'bg-gray-400', text: 'text-gray-700', bg: 'bg-gray-50', icon: <BarChart size={16} /> };
     }
   };
+// Ordenar por valor descendente, excepto para OEE y TOTAL
+const kpisOrdenados = [...kpis].sort((a, b) => {
+  if (a.label === "OEE")   return -1;
+  if (b.label === "OEE")   return  1;
+  if (a.label === "TOTAL") return  1;
+  if (b.label === "TOTAL") return -1;
+
+  return b.value - a.value; // el resto por valor descendente
+});
+// Orden general por valor descendente
+// const kpisOrdenados = [...kpis].sort((a, b) => b.value - a.value);
 
   return (
     <div className="bg-white rounded-[40px] shadow-xl border border-gray-100 overflow-hidden">
@@ -52,7 +63,7 @@ const KPISection: React.FC<KPISectionProps> = ({ kpis }) => {
 
       {/* Lista de KPIs */}
       <div className="p-8 pt-4 space-y-6">
-        {kpis.map((kpi, index) => {
+        {kpisOrdenados.map((kpi, index) => {
           const theme = getKpiTheme(kpi.status);
           const barWidth = kpi.status === 'total' ? 100 : Math.min(kpi.value, 100);
 
