@@ -283,7 +283,7 @@ const catalogStopCodes: StopCode[] = [
   { "codigo": "C11", "detalle": "REGULACION DE ALTURA ( TORRE )", "tipo_n0": "OPD", "nivel_1": "PARADAS OPERATIVAS", "nivel_2": "LLENADORA / FILLER" },
   { "codigo": "C12", "detalle": "SIST. TRANSMISION PIÑON O CADENA ( REPARAR O CAMBI )", "tipo_n0": "EQ", "nivel_1": "PARADAS POR EQUIPO", "nivel_2": "LLENADORA / FILLER" },
   { "codigo": "C13", "detalle": "SIST. ELECTRICO GENERAL Y DE LA TOLVA", "tipo_n0": "EQ", "nivel_1": "PARADAS POR EQUIPO", "nivel_2": "LLENADORA / FILLER" },
-  { "codigo": "C14", "detalle": "REGULACION DE DISCO/ PLATO ANTIROTACIONAL", "tipo_n0": "OPD", "nivel_1": "PARADAS OPERATIVAS", "nivel_2": "LLENADORA / FILLER" },
+  { "codigo": "J14", "detalle": "SANEAMIENTO DE LINEA", "tipo_n0": "RD", "nivel_1": "PARADAS RUTINARIAS", "nivel_2": "SANEAMIENTO DE LINEA" },
   { "codigo": "C15", "detalle": "FALLA DE MOTOR ( FAJA , EJE )", "tipo_n0": "EQ", "nivel_1": "PARADAS POR EQUIPO", "nivel_2": "LLENADORA / FILLER" },
   { "codigo": "C16", "detalle": "OTROS", "tipo_n0": "OPD", "nivel_1": "PARADAS OPERATIVAS", "nivel_2": "LLENADORA / FILLER" },
   { "codigo": "C17", "detalle": "AJUSTE / CAMBIO ANTIROTACIONAL", "tipo_n0": "OPD", "nivel_1": "PARADAS OPERATIVAS", "nivel_2": "LLENADORA / FILLER" },
@@ -295,7 +295,11 @@ const catalogStopCodes: StopCode[] = [
   { "codigo": "C22", "detalle": "CAMBIO DE RESORTES", "tipo_n0": "EQ", "nivel_1": "PARADAS POR EQUIPO", "nivel_2": "LLENADORA / FILLER" },
   { "codigo": "J16", "detalle": "BAJA DE PRODUCTO", "tipo_n0": "QD", "nivel_1": "PERDIDAS DE CALIDAD", "nivel_2": "PRODUCTO DEFECTUOSO" },
   { "codigo": "J82", "detalle": "TIEMPO NO PROGRAMADO", "tipo_n0": "TNP", "nivel_1": "TIEMPO NO PROGRAMADO", "nivel_2": "HORAS NO PROGRAMADAS" },
-  { "codigo": "J169", "detalle": "LLENADORA", "tipo_n0": "OPD", "nivel_1": "TIEMPO NO PROGRAMADO", "nivel_2": "LLENADORA" }
+  { "codigo": "J169", "detalle": "LLENADORA", "tipo_n0": "OPD", "nivel_1": "TIEMPO NO PROGRAMADO", "nivel_2": "LLENADORA" },
+  { "codigo": "J1", "detalle": "ETIQUETA MALA CALIDAD", "tipo_n0": "OR", "nivel_1": "PARADAS ORGANIZACIONALES", "nivel_2": "CALIDAD DE INSUMOS" },
+  { "codigo": "FL1", "detalle": "FALL DEL SITEMA ELECTRICO", "tipo_n0": "EQ", "nivel_1": "PARADAS POR EQUIPO", "nivel_2": "PALETIZADORA / PALLETIZER" },
+  { "codigo": "H5", "detalle": "CAMBIO DE BOBINA", "tipo_n0": "OPD", "nivel_1": "PARADAS OPERATIVAS", "nivel_2": "EMPACADORA / PACKER" },
+
 ]
 
 // ============================================
