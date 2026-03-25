@@ -134,6 +134,11 @@ const StopControl: React.FC<StopControlProps> = ({
       alert('Debe ingresar la cantidad producida.');
       return;
     }
+
+    if (!comments.mnf) {
+      alert('Debe ingresar comentarios en MNF');
+      return;
+    }
   setComments({  
       ...currentHour.comments,
     mnf: '',
@@ -212,6 +217,12 @@ const StopControl: React.FC<StopControlProps> = ({
         <MetricCard 
             label="Justificado" 
             value={`${currentHour.justificado.toFixed(1)} min`} 
+            icon={Settings} 
+            color={currentHour.justificar === currentHour.justificado && currentHour.justificar > 0 ? "green" : "orange"} 
+        />
+        <MetricCard 
+            label="Dif a Justificar" 
+            value={`${(currentHour.justificar - currentHour.justificado).toFixed(1)} min`} 
             icon={Settings} 
             color={currentHour.justificar === currentHour.justificado && currentHour.justificar > 0 ? "green" : "orange"} 
         />
