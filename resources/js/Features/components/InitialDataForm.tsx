@@ -234,7 +234,7 @@ useEffect(() => {
   function handleChangeOpValue(e: React.ChangeEvent<HTMLInputElement>) {
     if (!e.target.value.length || e.target.value.length > 6) {
       setOpValue("");
-      alert("El valor de la OP debe tener mas 6 dígitos.");
+      setAlerta("El valor de la OP debe tener mas 6 dígitos.");
     } else {
       setOpValue(e.target.value);
     }
