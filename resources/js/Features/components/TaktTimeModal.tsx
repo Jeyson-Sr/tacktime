@@ -31,8 +31,24 @@ const TaktTimeModal: React.FC<TaktTimeModalProps> = ({ onClose, hourlyRecords, l
     }
   };
 
-  const dayShift = hourlyRecords.slice(0, 12);
-  const nightShift = hourlyRecords.slice(12, 24);
+
+  const splitShifts = () => {
+    if (!hourlyRecords.length) return { dayShift: [], nightShift: [] };
+
+    let dayShift: HourlyProduction[] = [];
+    let nightShift: HourlyProduction[] = [];
+
+    const firstHour = hourlyRecords[0].hour;
+    if (firstHour === "06:30 - 07:30") {
+      dayShift = hourlyRecords;
+    } else if (firstHour === "18:30 - 19:30") {
+      nightShift = hourlyRecords;
+    }
+
+    return { dayShift, nightShift };
+  };
+
+  const { dayShift, nightShift } = splitShifts();
 // ─── TURNO DÍA ───────────────────────────────────────────────
 const calcularRatioDia = () => {
   const horasCerradas = dayShift.filter(item => item.closed);
