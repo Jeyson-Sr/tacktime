@@ -76,8 +76,21 @@ const StopControl: React.FC<StopControlProps> = ({
   });
 
     const [alerta, setAlerta] = useState('');
+    const lastTap = useRef(0);//Último tiempo de tap
   
-  
+const handleTap = () => {
+    const now = Date.now();
+    const diff = now - lastTap.current;
+
+    if (diff < 300) {
+      // 👉 doble tap (móvil)
+      setIsModalOpenBuscadorCode(true);
+    }
+
+    lastTap.current = now;
+  };
+
+
   useEffect(() => {
     if (alerta.trim()) {
       const timer = setTimeout(() => {
@@ -260,6 +273,7 @@ const StopControl: React.FC<StopControlProps> = ({
                 <input
                     type="text"
                     value={newStop.codigo}
+                    onClick={handleTap}
                     onDoubleClick={() => setIsModalOpenBuscadorCode(true)}
                     onChange={(e) => handleCodeChange(e.target.value)}
                     className="w-full px-4 py-3 bg-gray-50 border-none rounded-xl font-bold uppercase text-blue-600 focus:ring-2 ring-[#D4E157] transition-all"
