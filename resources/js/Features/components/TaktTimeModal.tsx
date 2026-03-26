@@ -94,7 +94,7 @@ const calcularRatio24h = () => {
 
 const ratioDia   = calcularRatioDia();
 const ratioNoche = calcularRatioNoche();
-const cump        = calcularRatio24h();   // OEE = cumplimiento del día completo
+const cump        = calcularRatio24h();   // CUMP = cumplimiento del día completo
 
 
 
@@ -102,8 +102,8 @@ const cump        = calcularRatio24h();   // OEE = cumplimiento del día complet
 
   return (
     <>
-      <div className="fixed inset-0 z-[150] flex items-center justify-center p-4 bg-[#004B23]/40 backdrop-blur-md">
-        <div className="bg-[#F8FAFC] w-full max-w-7xl rounded-[40px] shadow-2xl flex flex-col max-h-[95vh] overflow-hidden border border-white/20">
+      <div className="fixed top-0 left-2 inset-0 z-[150] flex items-start justify-center p-4 bg-[#004B23]/40 backdrop-blur-md rounded-[30px]">
+        <div className="sticky top-6 bg-[#F8FAFC] w-full max-w-7xl rounded-[40px] shadow-2xl flex flex-col max-h-[95vh] overflow-hidden border border-white/20">
           
           {/* HEADER SUPERIOR */}
           <div className="bg-[#004B23] p-8 text-white relative">

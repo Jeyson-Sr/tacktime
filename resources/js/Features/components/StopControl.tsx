@@ -171,7 +171,6 @@ const StopControl: React.FC<StopControlProps> = ({
   const canEditMantto = hasType(['EQUIPO', 'OPERATIVAS']);
   const canEditCalidad = hasType(['PERDIDAS DE CALIDAD']);
 
-  console.log()
 
   return (
     <div className="max-w-5xl mx-auto space-y-6 pb-10">

@@ -49,8 +49,8 @@ const StopCodeSearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose, onSe
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-[#004B23]/40 backdrop-blur-md">
-      <div className="bg-white w-full max-w-3xl rounded-[40px] shadow-2xl flex flex-col max-h-[85vh] overflow-hidden border border-white/20">
+    <div className="fixed top-0 left-2 inset-0 z-[200] flex items-start justify-center p-4 bg-[#004B23]/40 backdrop-blur-md rounded-[30px]">
+      <div className="sticky top-10 -mt-100 bg-white w-full max-w-3xl rounded-[40px] shadow-2xl flex flex-col max-h-[85vh] overflow-hidden border border-white/20">
         
         {/* HEADER: Título y Buscador */}
         <div className="p-8 pb-6 space-y-6">

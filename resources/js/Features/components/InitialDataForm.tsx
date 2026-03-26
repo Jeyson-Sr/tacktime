@@ -227,7 +227,7 @@ useEffect(() => {
       }
     //----------------------------------------------
 
-    console.log("🚀 Datos de Producción Inicializados:", finalData);
+    // console.log("🚀 Datos de Producción Inicializados:", finalData);
     onSubmit(finalData);
   };
 
