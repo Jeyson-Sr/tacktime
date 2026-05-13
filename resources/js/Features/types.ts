@@ -238,3 +238,26 @@ export type StopCode = {
   nivel_1: string;
   nivel_2: string;
 };
+
+
+
+
+
+//------------------------------------------
+export type CommentColor = "blue" | "green" | "orange" | "red" | "yellow";
+
+export interface Comentario {
+  contenido?: string;
+  color?: CommentColor;
+}
+
+export interface HoraData {
+  hora: string;
+  phProducidos: number;
+  comentarios?: Comentario[];
+  paradas?: StopRecord[];
+}
+
+export interface ProduccionHoraListProps {
+  data: HoraData[];
+}
