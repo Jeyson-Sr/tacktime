@@ -112,10 +112,10 @@ const ProductionControl: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen  p-5">
+    <div className="min-h-screen w-full p-5">
       <div className="max-w mx-auto">
         {/* Header */}
-        <div className="flex flex-col md:flex-row justify-between items-center bg-white rounded-lg shadow-lg p-4 mb-5">
+        <div className="flex flex-col md:flex-row  gap-5 justify-between items-center bg-white rounded-lg shadow-lg p-4 mb-5">
           <div className="flex flex-wrap gap-6 items-center">
             <HeaderItem icon={Calendar} label="FECHA" value={appState.productionData.fecha} />
             <HeaderItem icon={Clock} label="TURNO" value={appState.productionData.turno} />
@@ -123,12 +123,25 @@ const ProductionControl: React.FC = () => {
             <HeaderItem icon={User} label="INGENIERO" value={appState.productionData.ingeniero} />
             <HeaderItem icon={User} label="OPERADOR" value={appState.productionData.operador} />
           </div>
+          <div className='flex gap-5'>
+            {appState.productionData.descripccion && (
+            <div className="px-6 py-2 bg-gray-50 rounded-full border border-gray-100 flex flex-col items-center">
+                <span className="text-[9px] font-black text-gray-400 uppercase">Detalle</span>
+                <span className="font-mono font-bold text-[#004B23]">{appState.productionData.descripccion.toLocaleString()}</span>
+            </div>
+          )}
+          <div className="px-6 py-2 bg-gray-50 rounded-full border border-gray-100 flex flex-col items-center">
+                <span className="text-[9px] font-black text-gray-400 uppercase">BPH Nominal</span>
+                <span className="font-mono font-bold text-[#004B23]">{appState.productionData.bph.toLocaleString()}</span>
+            </div>
+
+          </div>
             <HeaderItem icon={Settings} label="OP" value={generateConsecutiveCode(appState.productionData.op) || 'N/A'} />
         </div>
 
         {/* Main Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-5 mb-5">
-          <div className="lg:col-span-3">
+        <div className="grid grid-cols-1 lg:grid-cols-1 gap-5 mb-5">
+          <div className="lg:col-span-4">
             <StopControl
               currentHour={currentHour}
               onUpdateHour={updateCurrentHour}
@@ -142,11 +155,12 @@ const ProductionControl: React.FC = () => {
               BPH={appState.productionData.bph}
               SKU={appState.productionData.sku}
               descripccion={appState.productionData.descripccion}
+              hourlyRecords={appState.hourlyRecords}
             />
           </div>
-          <div>
+          {/* <div>
             <KPISection kpis={kpis} />
-          </div>
+          </div> */}
         </div>
 
         {/* Botón Ver Takt Time */}
