@@ -178,7 +178,8 @@ const InicioView: React.FC = () => (
 
       <h1 className="text-3xl sm:text-4xl font-bold text-center mb-5" style={{ color: AJE.bosque }}>
           <div className="flex items-center justify-center ">
-              <RevealList items={['Sistema', 'Integrado de', 'Rendimiento y', 'Volumen', 'Operativo']} isHoverMode={false} />
+            <h1>Sistema Integrado de Rendimiento y Volumen Operativo</h1>
+              {/* <RevealList items={['Sistema', 'Integrado de', 'Rendimiento y', 'Volumen', 'Operativo']} isHoverMode={true} /> */}
           </div>
       </h1>
 
