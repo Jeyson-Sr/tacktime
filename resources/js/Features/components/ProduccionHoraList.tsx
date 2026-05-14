@@ -178,27 +178,17 @@ function buildWave(seed: number, w = 80): string {
 
 // ─── Componente de Comentario (Burbuja) ───────────────────────────────────
 function ComentarioItem({ comentario, cardIdx, commentIdx }: { comentario: Comentario; cardIdx: number; commentIdx: number }) {
-  const [open, setOpen] = useState(false);
   const cfg = COLOR_CFG[comentario.color ?? "blue"];
-  const wave = buildWave(cardIdx * 3 + commentIdx * 7);
 
   return (
     <div className="flex items-center gap-2 shrink-0 bg-white/80 px-3 py-1.5 rounded-full border border-gray-100 shadow-sm transition-all hover:shadow-md">
       <button
-        onClick={(e) => { e.stopPropagation(); setOpen(!open); }}
         className={`w-2.5 h-2.5 rounded-full transition-transform hover:scale-125 ${cfg.dot}`}
       />
-      {open ? (
         <span className="text-[11px] text-gray-600 font-bold whitespace-nowrap px-1 animate-in fade-in slide-in-from-left-1">
           {comentario.contenido}
         </span>
-      ) : (
-        <button onClick={(e) => { e.stopPropagation(); setOpen(true); }} className="flex items-center opacity-70 hover:opacity-100 transition-opacity">
-          <svg width="50" height="10" viewBox="0 0 80 12">
-            <path d={wave} fill="none" stroke={cfg.stroke} strokeWidth="2" strokeLinecap="round" />
-          </svg>
-        </button>
-      )}
+
     </div>
   );
 }
@@ -295,24 +285,21 @@ function HoraRowEditable({ item, acumulado, index, onUpdate, onDelete }: HoraRow
           isOpen ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0 pointer-events-none'
         }`}
       >
-        <div className="overflow-hidden">
+        <div className="overflow-hidden  rounded-[40px]">
           <div className="bg-gray-50/80 rounded-b-[32px] -mt-8 pt-14 pb-6 px-8 border-x border-b border-gray-100 shadow-inner">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
               
               {/* Gestión de Paradas */}
               <div className="space-y-4">
-                <div className="flex justify-between items-center border-b border-gray-200 pb-2">
+                <div className="flex justify-between items-center border-b border-gray-200 pb-2 ">
                   <h4 className="text-[11px] font-black text-gray-500 uppercase flex items-center gap-2">
-                    <AlertCircle size={14} className="text-red-400" /> Paradas de la Hora
+                    <p className="text-[10px] font-bold text-gray-700">
+                    Total de Paradas: {paradas.length}
+                    </p>
                   </h4>
                   <button className="text-[#004B23] hover:bg-white p-1 rounded-lg transition-colors">
                     <Plus size={18} />
                   </button>
-                </div>
-                <div>
-                  <p className="text-[10px] font-bold text-gray-700">
-                    Total de Paradas: {paradas.length}
-                  </p>
                 </div>
                 <div className="space-y-2 max-h-45 overflow-y-auto pr-2 custom-scrollbar">
                   {paradas?.length ? (
@@ -419,6 +406,8 @@ export default function ProduccionHoraList({ data, onDataChange }: { data: HoraD
     onDataChange?.(newData);
   };
 
+  console.log(data);
+
   const handleDelete = (idx: number) => {
     const newData = data.filter((_, i) => i !== idx);
     onDataChange?.(newData);
@@ -443,7 +432,7 @@ export default function ProduccionHoraList({ data, onDataChange }: { data: HoraD
         })}
         
         {data.length === 0 && (
-          <div className="text-center py-20 bg-gray-50 rounded-[40px] border-2 border-dashed border-gray-200">
+          <div className="text-center py-20 bg-gray-50 rounded-[40px] max-h-[50px] border-2 border-dashed border-gray-200">
             <p className="text-gray-400 font-black text-xs uppercase tracking-tighter">Sin datos de producción</p>
           </div>
         )}
