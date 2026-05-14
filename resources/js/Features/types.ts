@@ -249,6 +249,7 @@ export type CommentColor = "blue" | "green" | "orange" | "red" | "yellow";
 export interface Comentario {
   contenido?: string;
   color?: CommentColor;
+  tipo?: string;
 }
 
 export interface HoraData {

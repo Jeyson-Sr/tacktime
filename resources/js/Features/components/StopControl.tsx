@@ -187,7 +187,7 @@ const DATA: HoraData[] = hourlyRecords
   .map(record => {
     // Definimos la configuración local para el mapeo de colores
     const config: { key: string; color: CommentColor }[] = [
-      { key: 'mnf', color: 'blue' },
+      { key: 'mnf', color: 'green' },
       { key: 'mantto', color: 'orange' },
       { key: 'calidad', color: 'yellow' }
     ];
@@ -196,7 +196,8 @@ const DATA: HoraData[] = hourlyRecords
     const listaComentarios: Comentario[] = config
       .map(conf => ({
         color: conf.color,
-        contenido: record.comments[conf.key as keyof typeof record.comments]
+        contenido: record.comments[conf.key as keyof typeof record.comments],
+        tipo: conf.key
       }))
       .filter(c => c.contenido && c.contenido.trim() !== ""); // Filtro de vacíos
 

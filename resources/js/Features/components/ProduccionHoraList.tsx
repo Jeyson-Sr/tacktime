@@ -345,7 +345,7 @@ function HoraRowEditable({ item, acumulado, index, onUpdate, onDelete }: HoraRow
                     <textarea 
                       key={cIdx}
                       className={`w-full bg-gray-50 border-l-4 rounded-xl p-3 text-sm min-h-[80px] outline-none focus:ring-1 ring-gray-200 transition-all ${
-                        comentario.color === 'blue' ? 'border-blue-500' : 
+                        comentario.color === 'green' ? 'border-green-500' : 
                         comentario.color === 'orange' ? 'border-orange-500' : 'border-gray-300'
                       }`}
                       placeholder="Escriba aquí..."
