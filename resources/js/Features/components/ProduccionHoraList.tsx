@@ -309,7 +309,12 @@ function HoraRowEditable({ item, acumulado, index, onUpdate, onDelete }: HoraRow
                     <Plus size={18} />
                   </button>
                 </div>
-                <div className="space-y-2 max-h-40 overflow-y-auto pr-2 custom-scrollbar">
+                <div>
+                  <p className="text-[10px] font-bold text-gray-700">
+                    Total de Paradas: {paradas.length}
+                  </p>
+                </div>
+                <div className="space-y-2 max-h-45 overflow-y-auto pr-2 custom-scrollbar">
                   {paradas?.length ? (
                     paradas.map((p: any, pIdx: number) => (
                       <div key={p.id || pIdx} className="flex items-center gap-3 bg-white p-3 rounded-2xl border border-gray-100">
