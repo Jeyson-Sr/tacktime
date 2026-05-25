@@ -285,12 +285,19 @@ return (
         />
 
         {/* BOTÓN FINALIZAR — full width en móvil, 2 cols en desktop */}
-        <button
-          onClick={handleFinalizar}
-          className="col-span-2 lg:col-span-2 py-5 sm:py-6 rounded-[24px] bg-[#004B23] text-white font-black text-lg sm:text-2xl shadow-xl shadow-green-900/20 hover:bg-[#003317] transition-all flex items-center justify-center gap-3 active:scale-95"
-        >
+          <button
+            onClick={handleFinalizar}
+            disabled={currentHour.closed}
+            className={`col-span-2 lg:col-span-2 py-5 sm:py-6 rounded-[24px] text-white font-black text-lg sm:text-2xl shadow-xl transition-all flex items-center justify-center gap-3 active:scale-95 ${
+              currentHour.closed
+                ? 'bg-gray-400 cursor-not-allowed'
+                : 'bg-[#004B23] hover:bg-[#003317] shadow-green-900/20'
+            }`}
+          >
           <CheckCircle2 size={28} className="shrink-0" />
-          <span className="truncate">FINALIZAR HORA {currentHour.hour}</span>
+          <span className="truncate">
+            {currentHour.closed ? 'HORA CERRADA' : `FINALIZAR HORA ${currentHour.hour}`}
+          </span>
         </button>
       </div>
 

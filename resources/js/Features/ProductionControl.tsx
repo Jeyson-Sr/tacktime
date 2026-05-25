@@ -10,6 +10,7 @@ import TaktTimeModal from './components/TaktTimeModal';
 import { ProductionData, HourlyProduction, AppState, KPI } from './types';
 import { fetchShiftHours } from './database';
 import { calculateKPIs } from './utils/calculations';
+import { syncOeeProduction } from '@/Features/server/oeeProduction.api'; 
 
 const ProductionControl: React.FC = () => {
   const [appState, setAppState] = useState<AppState>({
@@ -22,30 +23,43 @@ const ProductionControl: React.FC = () => {
   const [showTaktTimeModal, setShowTaktTimeModal] = useState(false);
   const [kpis, setKPIs] = useState<KPI[]>([]);
 
+const [isSavingShift, setIsSavingShift] = useState(false);
+const [isShiftFinished, setIsShiftFinished] = useState(false);
+const [finishShiftMessage, setFinishShiftMessage] = useState('');
+
   // Inicializar producción
   const handleInitializeProduction = async (data: ProductionData) => {
-    const shiftHours = await fetchShiftHours(data.turno);
-    
-    const hourlyRecords: HourlyProduction[] = shiftHours.map((hour, index) => ({
-      hour,
-      hourIndex: index,
-      estimado: data.palletsPorHora,
-      producido: 0,
-      justificar: 0,
-      justificado: 0,
-      status: 'blue',
-      stops: [],
-      comments: { mnf: '', mantto: '', calidad: '' },
-      closed: false
-    }));
+  const shiftHours = await fetchShiftHours(data.turno);
+  
+  const hourlyRecords: HourlyProduction[] = shiftHours.map((hour, index) => ({
+    hour,
+    hourIndex: index,
+    estimado: data.palletsPorHora,
+    producido: 0,
+    justificar: 0,
+    justificado: 0,
+    status: 'blue',
+    stops: [],
+    comments: { mnf: '', mantto: '', calidad: '' },
+    closed: false
+  }));
 
-    setAppState({
-      productionData: data,
-      currentHourIndex: 0,
-      hourlyRecords,
-      isInitialized: true
-    });
+  const newState: AppState = {
+    productionData: data,
+    currentHourIndex: 0,
+    hourlyRecords,
+    isInitialized: true
   };
+
+  setAppState(newState);
+
+  try {
+    await syncOeeProduction(newState);
+    console.log('Producción creada en DB');
+  } catch (error) {
+    console.error('Error guardando producción inicial:', error);
+  }
+};
 
   // Actualizar hora actual
   const updateCurrentHour = (updates: Partial<HourlyProduction>) => {
@@ -61,17 +75,67 @@ const ProductionControl: React.FC = () => {
 
   // Cerrar hora y avanzar
   const closeCurrentHour = () => {
-    setAppState(prev => {
-      const newRecords = [...prev.hourlyRecords];
-      newRecords[prev.currentHourIndex].closed = true;
-      
-      return {
-        ...prev,
-        hourlyRecords: newRecords,
-        currentHourIndex: Math.min(prev.currentHourIndex + 1, 11)
-      };
-    });
-  };
+  setAppState(prev => {
+    const newRecords = [...prev.hourlyRecords];
+
+    newRecords[prev.currentHourIndex] = {
+      ...newRecords[prev.currentHourIndex],
+      closed: true
+    };
+
+    const isLastHour = prev.currentHourIndex >= newRecords.length - 1;
+
+    return {
+      ...prev,
+      hourlyRecords: newRecords,
+      currentHourIndex: isLastHour
+        ? prev.currentHourIndex
+        : prev.currentHourIndex + 1
+    };
+  });
+};
+
+
+const handleFinishShift = async () => {
+  setFinishShiftMessage('');
+
+  const totalHours = appState.hourlyRecords.length;
+  const closedHours = appState.hourlyRecords.filter(hour => hour.closed).length;
+  const pendingHours = appState.hourlyRecords.filter(hour => !hour.closed);
+
+  if (!appState.productionData) {
+    setFinishShiftMessage('No hay datos de producción para guardar.');
+    return;
+  }
+
+  if (totalHours === 0) {
+    setFinishShiftMessage('No hay horas generadas para este turno.');
+    return;
+  }
+
+  if (closedHours < totalHours) {
+    const pendingText = pendingHours
+      .map(hour => hour.hour)
+      .join(', ');
+
+    setFinishShiftMessage(`Aún faltan cerrar horas: ${pendingText}`);
+    return;
+  }
+
+  try {
+    setIsSavingShift(true);
+
+    await syncOeeProduction(appState);
+
+    setIsShiftFinished(true);
+    setFinishShiftMessage('Turno finalizado y guardado correctamente en la base de datos.');
+  } catch (error) {
+    console.error('Error al finalizar turno:', error);
+    setFinishShiftMessage('No se pudo guardar el turno. Revisa consola o conexión con backend.');
+  } finally {
+    setIsSavingShift(false);
+  }
+};
 
   // Recalcular KPIs cuando cambian los registros
   useEffect(() => {
@@ -85,7 +149,18 @@ const ProductionControl: React.FC = () => {
     return <InitialDataForm onSubmit={handleInitializeProduction} />;
   }
 
+  // console.log(appState.productionData.op);
+
   const currentHour = appState.hourlyRecords[appState.currentHourIndex];
+
+  const totalHours = appState.hourlyRecords.length;
+
+const closedHours = appState.hourlyRecords.filter(hour => hour.closed).length;
+
+const canFinishShift =
+  totalHours > 0 &&
+  closedHours === totalHours &&
+  !isShiftFinished;
 
   // Función para generar código con año actual + 6 dígitos consecutivos
   const generateConsecutiveCode = (input: number | string | null): string | null => {
@@ -142,21 +217,23 @@ const ProductionControl: React.FC = () => {
         {/* Main Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-1 gap-5 mb-5">
           <div className="lg:col-span-4">
-            <StopControl
-              currentHour={currentHour}
-              onUpdateHour={updateCurrentHour}
-              onCloseHour={closeCurrentHour}
-              productData={{
-                formato: appState.productionData.formato,
-                marca: appState.productionData.marca,
-                sabor: appState.productionData.sabor,
-                palletsPorHora: appState.productionData.palletsPorHora
-              }}
-              BPH={appState.productionData.bph}
-              SKU={appState.productionData.sku}
-              descripccion={appState.productionData.descripccion}
-              hourlyRecords={appState.hourlyRecords}
-            />
+            {!isShiftFinished && (
+              <StopControl
+                currentHour={currentHour}
+                onUpdateHour={updateCurrentHour}
+                onCloseHour={closeCurrentHour}
+                productData={{
+                  formato: appState.productionData.formato,
+                  marca: appState.productionData.marca,
+                  sabor: appState.productionData.sabor,
+                  palletsPorHora: appState.productionData.palletsPorHora
+                }}
+                BPH={appState.productionData.bph}
+                SKU={appState.productionData.sku}
+                descripccion={appState.productionData.descripccion}
+                hourlyRecords={appState.hourlyRecords}
+              />
+            )}
           </div>
           {/* <div>
             <KPISection kpis={kpis} />
@@ -165,12 +242,49 @@ const ProductionControl: React.FC = () => {
 
         {/* Botón Ver Takt Time */}
         <div className="flex justify-center">
-          <button
+          <div className="bg-white rounded-2xl shadow-lg p-5 mb-5 border border-gray-100">
+            <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+              <div>
+                <h3 className="text-lg font-black text-[#004B23]">
+                  Estado del turno
+                </h3>
+
+                <p className="text-sm font-semibold text-gray-500">
+                  Horas cerradas: {closedHours} / {totalHours}
+                </p>
+
+                {finishShiftMessage && (
+                  <p className={`mt-2 text-sm font-bold ${
+                    isShiftFinished ? 'text-green-600' : 'text-red-600'
+                  }`}>
+                    {finishShiftMessage}
+                  </p>
+                )}
+              </div>
+
+              {canFinishShift && (
+                <button
+                  onClick={handleFinishShift}
+                  disabled={isSavingShift}
+                  className="w-full md:w-auto bg-[#004B23] text-white font-black py-4 px-8 rounded-2xl shadow-lg hover:bg-[#003317] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {isSavingShift ? 'GUARDANDO TURNO...' : 'FINALIZAR TURNO Y GUARDAR'}
+                </button>
+              )}
+
+              {isShiftFinished && (
+                <div className="bg-green-50 text-green-700 font-black px-6 py-4 rounded-2xl border border-green-100">
+                  TURNO FINALIZADO
+                </div>
+              )}
+            </div>
+          </div>
+          {/* <button
             onClick={() => setShowTaktTimeModal(true)}
             className="bg-white text-indigo-600 font-bold py-4 px-8 rounded-lg shadow-lg hover:shadow-xl"
           >
             Ver Takt Time {appState.productionData.linea}
-          </button>
+          </button> */}
         </div>
 
         {/* Modal Takt Time */}

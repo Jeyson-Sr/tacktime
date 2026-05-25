@@ -18,6 +18,8 @@ import RevealList from '../utils/RevealList';
 import embotelladoraCaral from '../../../img/embotelladora_caral.webp';
 import ProductionControl from '../ProductionControl';
 import IdleLogoutWatcher from '../Auth/IdleLogoutWatcher';
+import OeeProductionsTable from '../grafics/OeeProductionsTable';
+import OeeByLineChart from '../grafics/OeeByLineChart';
 
 
 // ─── TYPES ────────────────────────────────────────────────────────────────────
@@ -251,11 +253,12 @@ const InicioView: React.FC = () => (
 
 // ─── PROYECTOS VIEW ───────────────────────────────────────────────────────────
 const ProyectosView: React.FC = () => (
-  <div className="flex flex-col rounded-3xl mt-2 ml-2 mr-2 overflow-hidden">
+  <>
+  {/* <div className="flex flex-col rounded-3xl mt-2 ml-2 mr-2 overflow-hidden">
     <div
       className="relative pt-12 pb-20 flex flex-col items-center px-4 sm:px-8"
       style={{ background: `linear-gradient(to bottom, ${AJE.menta} 0%, #d4f0de 10%, #ffffff 100%)` }}
-    >
+      >
       <div
         className="absolute top-4 right-4 sm:right-6 text-[11px] font-bold px-3 py-1 rounded-full flex items-center gap-1.5 border"
         style={{ background: AJE.goldLight, borderColor: AJE.gold, color: AJE.bosque }}
@@ -347,12 +350,17 @@ const ProyectosView: React.FC = () => (
         </div>
       </div>
     </div>
-  </div>
+  </div> */}
+  <OeeProductionsTable />
+  
+
+  </>
 );
 
 // ─── PLANTILLAS VIEW ──────────────────────────────────────────────────────────
 const PlantillasView: React.FC = () => (
-  <div className="flex flex-col rounded-3xl mt-2 ml-2 mr-2 overflow-hidden">
+  <>
+  {/* <div className="flex flex-col rounded-3xl mt-2 ml-2 mr-2 overflow-hidden">
     <div
       className="relative pt-12 pb-24 flex flex-col items-center px-4 sm:px-8"
       style={{ background: `linear-gradient(to bottom, ${AJE.menta} 0%, #d4f0de 10%, #ffffff 100%)` }}
@@ -443,7 +451,7 @@ const PlantillasView: React.FC = () => (
           { bg: AJE.lima,        text: 'PROYECTO DE SOSTENIBILIDAD',       color: '#fff' },
         ].map((card, i) => (
           <div
-            key={i}
+          key={i}
             className="min-w-[140px] h-[180px] rounded-2xl flex items-center justify-center cursor-pointer hover:scale-105 transition-transform shadow-sm"
             style={{ background: card.bg }}
           >
@@ -452,7 +460,9 @@ const PlantillasView: React.FC = () => (
         ))}
       </div>
     </div>
-  </div>
+  </div> */}
+  <OeeByLineChart /> 
+    </>
 );
 
 // ─── MARCA VIEW ───────────────────────────────────────────────────────────────
