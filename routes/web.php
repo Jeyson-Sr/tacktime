@@ -10,5 +10,12 @@ Route::get('/', function () {
 
 })->middleware(['auth', 'verified'])->name('home');
 
+
+Route::get('/dashboard/oee', function () {
+    return Inertia::render('Dashboard/OeeDashboard');
+});
+
+
 require __DIR__.'/settings.php';
 require __DIR__.'/api.php';
+require __DIR__.'/Oee.php';

@@ -20,6 +20,8 @@ import ProductionControl from '../ProductionControl';
 import IdleLogoutWatcher from '../Auth/IdleLogoutWatcher';
 import OeeProductionsTable from '../grafics/OeeProductionsTable';
 import OeeByLineChart from '../grafics/OeeByLineChart';
+import OeeDashboard from '../dashboard/OeeDashboard';
+
 
 
 // ─── TYPES ────────────────────────────────────────────────────────────────────
@@ -461,7 +463,8 @@ const PlantillasView: React.FC = () => (
       </div>
     </div>
   </div> */}
-  <OeeByLineChart /> 
+  {/* <OeeByLineChart />  */}
+  <OeeDashboard />
     </>
 );
 

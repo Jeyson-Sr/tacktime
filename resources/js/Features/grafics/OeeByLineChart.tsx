@@ -48,7 +48,7 @@ export default function OeeByLineChart() {
               tick={{ fill: '#166534', fontSize: 14 }} 
               axisLine={false}
               tickLine={false}
-              tickFormatter={(value) => `${value}%`}
+              tickFormatter={(value) => `${value}%`}  
               dx={-10}
             />
             

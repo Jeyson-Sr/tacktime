@@ -7,108 +7,144 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 
+
 class OeeProductionController extends Controller
 {
+
+private function formatProductionOrder($op, $fecha = null): ?string
+{
+    if (empty($op)) {
+        return null;
+    }
+
+    // Año desde la fecha enviada por el frontend
+    $year = $fecha
+        ? date('Y', strtotime($fecha))
+        : date('Y');
+
+    // Quita todo lo que no sea número
+    $cleanOp = preg_replace('/\D/', '', (string) $op);
+
+    // Si ya viene algo como 2026000424, nos quedamos solo con los últimos 6
+    if (strlen($cleanOp) > 6) {
+        $cleanOp = substr($cleanOp, -6);
+    }
+
+    // Rellena con ceros hasta 6 dígitos
+    $sixDigitOp = str_pad($cleanOp, 6, '0', STR_PAD_LEFT);
+
+    // Resultado final: año + 6 dígitos
+    return $year . $sixDigitOp;
+}
     public function sync(Request $request)
-    {
-        $validated = $request->validate([
-            'productionData' => ['required', 'array'],
-            'hourlyRecords' => ['required', 'array'],
-            'currentHourIndex' => ['nullable', 'integer'],
-        ]);
+{
+    $validated = $request->validate([
+        'productionData' => ['required', 'array'],
+        'hourlyRecords' => ['required', 'array'],
+        'currentHourIndex' => ['nullable', 'integer'],
+    ]);
 
-        $productionData = $validated['productionData'];
-        $hourlyRecords = $validated['hourlyRecords'];
+    $productionData = $validated['productionData'];
+    $hourlyRecords = $validated['hourlyRecords'];
 
-        return DB::transaction(function () use ($productionData, $hourlyRecords) {
+    // ✅ Aquí formateamos la OP antes de guardar
+    $formattedOp = $this->formatProductionOrder(
+        $productionData['op'] ?? null,
+        $productionData['fecha'] ?? null
+    );
 
-            $productionId = DB::table('oee_productions')->updateOrInsert(
+    return DB::transaction(function () use ($productionData, $hourlyRecords, $formattedOp) {
+
+        DB::table('oee_productions')->updateOrInsert(
+            [
+                'fecha' => $productionData['fecha'],
+                'turno' => $productionData['turno'],
+                'linea' => $productionData['linea'],
+
+                // ✅ Guardamos y buscamos con OP formateada
+                'op' => $formattedOp,
+            ],
+            [
+                'ingeniero' => $productionData['ingeniero'] ?? null,
+                'operador' => $productionData['operador'] ?? null,
+                'sku' => $productionData['sku'] ?? null,
+                'descripcion' => $productionData['descripccion'] ?? null,
+                'formato' => $productionData['formato'] ?? null,
+                'marca' => $productionData['marca'] ?? null,
+                'sabor' => $productionData['sabor'] ?? null,
+                'pallets_por_hora' => $productionData['palletsPorHora'] ?? 0,
+                'bph' => $productionData['bph'] ?? 0,
+                'updated_at' => now(),
+                'created_at' => now(),
+            ]
+        );
+
+        $production = DB::table('oee_productions')
+            ->where('fecha', $productionData['fecha'])
+            ->where('turno', $productionData['turno'])
+            ->where('linea', $productionData['linea'])
+
+            // ✅ También buscamos con OP formateada
+            ->where('op', $formattedOp)
+            ->first();
+
+        foreach ($hourlyRecords as $hour) {
+            DB::table('oee_hour_details')->updateOrInsert(
                 [
-                    'fecha' => $productionData['fecha'],
-                    'turno' => $productionData['turno'],
-                    'linea' => $productionData['linea'],
-                    'op' => $productionData['op'] ?? null,
+                    'oee_production_id' => $production->id,
+                    'hour_index' => $hour['hourIndex'],
                 ],
                 [
-                    'ingeniero' => $productionData['ingeniero'] ?? null,
-                    'operador' => $productionData['operador'] ?? null,
-                    'sku' => $productionData['sku'] ?? null,
-                    'descripcion' => $productionData['descripccion'] ?? null,
-                    'formato' => $productionData['formato'] ?? null,
-                    'marca' => $productionData['marca'] ?? null,
-                    'sabor' => $productionData['sabor'] ?? null,
-                    'pallets_por_hora' => $productionData['palletsPorHora'] ?? 0,
-                    'bph' => $productionData['bph'] ?? 0,
+                    'hour_range' => $hour['hour'],
+                    'estimado' => $hour['estimado'] ?? 0,
+                    'producido' => $hour['producido'] ?? 0,
+                    'minutos_a_justificar' => $hour['justificar'] ?? 0,
+                    'minutos_justificados' => $hour['justificado'] ?? 0,
+                    'status' => $hour['status'] ?? 'blue',
+                    'closed' => $hour['closed'] ?? false,
+                    'comment_mnf' => $hour['comments']['mnf'] ?? null,
+                    'comment_mantto' => $hour['comments']['mantto'] ?? null,
+                    'comment_calidad' => $hour['comments']['calidad'] ?? null,
                     'updated_at' => now(),
                     'created_at' => now(),
                 ]
             );
 
-            $production = DB::table('oee_productions')
-                ->where('fecha', $productionData['fecha'])
-                ->where('turno', $productionData['turno'])
-                ->where('linea', $productionData['linea'])
-                ->where('op', $productionData['op'] ?? null)
+            $hourDetail = DB::table('oee_hour_details')
+                ->where('oee_production_id', $production->id)
+                ->where('hour_index', $hour['hourIndex'])
                 ->first();
 
-            foreach ($hourlyRecords as $hour) {
-                DB::table('oee_hour_details')->updateOrInsert(
-                    [
-                        'oee_production_id' => $production->id,
-                        'hour_index' => $hour['hourIndex'],
-                    ],
-                    [
-                        'hour_range' => $hour['hour'],
-                        'estimado' => $hour['estimado'] ?? 0,
-                        'producido' => $hour['producido'] ?? 0,
-                        'minutos_a_justificar' => $hour['justificar'] ?? 0,
-                        'minutos_justificados' => $hour['justificado'] ?? 0,
-                        'status' => $hour['status'] ?? 'blue',
-                        'closed' => $hour['closed'] ?? false,
-                        'comment_mnf' => $hour['comments']['mnf'] ?? null,
-                        'comment_mantto' => $hour['comments']['mantto'] ?? null,
-                        'comment_calidad' => $hour['comments']['calidad'] ?? null,
-                        'updated_at' => now(),
-                        'created_at' => now(),
-                    ]
-                );
+            DB::table('oee_stop_details')
+                ->where('oee_hour_detail_id', $hourDetail->id)
+                ->delete();
 
-                $hourDetail = DB::table('oee_hour_details')
-                    ->where('oee_production_id', $production->id)
-                    ->where('hour_index', $hour['hourIndex'])
-                    ->first();
-
-                // Para demo: borramos y reinsertamos paradas de esa hora.
-                // Es simple y evita duplicados raros.
-                DB::table('oee_stop_details')
-                    ->where('oee_hour_detail_id', $hourDetail->id)
-                    ->delete();
-
-                foreach ($hour['stops'] ?? [] as $stop) {
-                    DB::table('oee_stop_details')->insert([
-                        'oee_hour_detail_id' => $hourDetail->id,
-                        'frontend_id' => $stop['id'] ?? null,
-                        'codigo' => $stop['codigo'] ?? '',
-                        'tipo' => $stop['tipo'] ?? '',
-                        'descripcion' => $stop['descripcion'] ?? null,
-                        'tiempo_minutos' => $stop['tiempoMinutos'] ?? 0,
-                        'frecuencia' => $stop['frecuencia'] ?? 1,
-                        'registered_at' => !empty($stop['timestamp'])
+            foreach ($hour['stops'] ?? [] as $stop) {
+                DB::table('oee_stop_details')->insert([
+                    'oee_hour_detail_id' => $hourDetail->id,
+                    'frontend_id' => $stop['id'] ?? null,
+                    'codigo' => strtoupper($stop['codigo'] ?? ''),
+                    'tipo' => strtoupper($stop['tipo'] ?? ''),
+                    'descripcion' => $stop['descripcion'] ?? null,
+                    'tiempo_minutos' => $stop['tiempoMinutos'] ?? 0,
+                    'frecuencia' => $stop['frecuencia'] ?? 1,
+                    'registered_at' => !empty($stop['timestamp'])
                         ? Carbon::parse($stop['timestamp'])->format('Y-m-d H:i:s')
                         : now(),
-                        'created_at' => now(),
-                        'updated_at' => now(),
-                    ]);
-                }
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
             }
+        }
 
-            return response()->json([
-                'ok' => true,
-                'message' => 'Producción OEE sincronizada correctamente',
-                'production_id' => $production->id,
-            ]);
-        });
-    }
+        return response()->json([
+            'ok' => true,
+            'message' => 'Producción OEE sincronizada correctamente',
+            'production_id' => $production->id,
+            'op' => $formattedOp,
+        ]);
+    });
+}
 
     public function index()
     {

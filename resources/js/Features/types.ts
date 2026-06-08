@@ -237,6 +237,11 @@ export type StopCode = {
   tipo_n0: 'EQ' | 'OPD' | 'OR' | 'PD' | 'QD' | 'RD' | 'TNP';
   nivel_1: string;
   nivel_2: string;
+
+  recurso_afectado?: string;
+  familia_oee?: string;
+  aplica_tetra?: string;
+  estado?: string;
 };
 
 
