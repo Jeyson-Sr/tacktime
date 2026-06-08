@@ -73,6 +73,31 @@ const [finishShiftMessage, setFinishShiftMessage] = useState('');
     });
   };
 
+  const updateHourByIndex = (
+  hourIndex: number,
+  updates: Partial<HourlyProduction>
+) => {
+  setAppState(prev => {
+    const newRecords = [...prev.hourlyRecords];
+
+    const realIndex = newRecords.findIndex(
+      record => record.hourIndex === hourIndex
+    );
+
+    if (realIndex === -1) return prev;
+
+    newRecords[realIndex] = {
+      ...newRecords[realIndex],
+      ...updates,
+    };
+
+    return {
+      ...prev,
+      hourlyRecords: newRecords,
+    };
+  });
+};
+
   // Cerrar hora y avanzar
   const closeCurrentHour = () => {
   setAppState(prev => {
@@ -221,6 +246,7 @@ const canFinishShift =
               <StopControl
                 currentHour={currentHour}
                 onUpdateHour={updateCurrentHour}
+                onUpdateHourByIndex={updateHourByIndex}
                 onCloseHour={closeCurrentHour}
                 productData={{
                   formato: appState.productionData.formato,

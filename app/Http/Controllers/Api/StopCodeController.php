@@ -10,7 +10,7 @@ class StopCodeController extends Controller
 {
     public function index(Request $request)
     {
-        $search = $request->query('search');
+        $search = trim((string) $request->query('search', ''));
 
         $query = DB::table('cod_stops')
             ->select(
@@ -26,13 +26,15 @@ class StopCodeController extends Controller
             )
             ->where('estado', 'ACTIVO');
 
-        if ($search) {
+        if ($search !== '') {
             $query->where(function ($q) use ($search) {
                 $q->where('codigo', 'like', "%{$search}%")
-                  ->orWhere('descripcion', 'like', "%{$search}%")
+                  ->orWhere('detalle', 'like', "%{$search}%")
+                  ->orWhere('tipo_parada', 'like', "%{$search}%")
                   ->orWhere('categoria', 'like', "%{$search}%")
                   ->orWhere('causa', 'like', "%{$search}%")
-                  ->orWhere('recurso_afectado', 'like', "%{$search}%");
+                  ->orWhere('recurso_afectado', 'like', "%{$search}%")
+                  ->orWhere('familia_oee', 'like', "%{$search}%");
             });
         }
 
@@ -44,14 +46,15 @@ class StopCodeController extends Controller
                     'codigo' => $item->codigo,
                     'detalle' => $item->detalle,
 
-                    // Esto alimenta tu TIPO_MAP actual
+                    // Para que no rompa tu frontend actual
                     'tipo_n0' => $item->tipo_parada,
-
-                    // Esto alimenta tu modal actual
                     'nivel_1' => $item->categoria,
                     'nivel_2' => $item->causa,
 
-                    // Extras por si luego quieres mostrarlos
+                    // Campos reales de BD
+                    'tipo_parada' => $item->tipo_parada,
+                    'categoria' => $item->categoria,
+                    'causa' => $item->causa,
                     'recurso_afectado' => $item->recurso_afectado,
                     'familia_oee' => $item->familia_oee,
                     'aplica_tetra' => $item->aplica_tetra,

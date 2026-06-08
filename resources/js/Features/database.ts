@@ -21,6 +21,7 @@ import {
   ProductionShift, 
   StopCode
 } from './types';
+import { httpClient } from "./server/httpClient";
 
 // ============================================
 // CONFIGURACIÓN DE PRODUCTOS
@@ -400,9 +401,23 @@ export const fetchBPH = async (linea: string, formato: string, marca: string, sa
 //-------------------------------------------------------------------------------------------------------------------------------
 
 
-export const fetchStopCodes = async (): Promise<StopCode[]> => {
-  await simulateNetworkDelay();
-  return catalogStopCodes;
+
+export const fetchStopCodes = async (search = ""): Promise<StopCode[]> => {
+  const query = search.trim()
+    ? `/stop-codes?search=${encodeURIComponent(search)}`
+    : "/stop-codes";
+
+  const response = await fetch(query, {
+    headers: {
+      Accept: "application/json",
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error("No se pudieron cargar los códigos de parada");
+  }
+
+  return response.json();
 };
 
 

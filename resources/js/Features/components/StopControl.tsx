@@ -41,6 +41,7 @@ interface StopControlProps {
   currentHour: HourlyProduction;
   onUpdateHour: (updates: Partial<HourlyProduction>) => void;
   onCloseHour: () => void;
+  onUpdateHourByIndex: (hourIndex: number, updates: Partial<HourlyProduction>) => void;
   productData: {
     formato: string;
     marca: string;
@@ -57,6 +58,7 @@ const StopControl: React.FC<StopControlProps> = ({
   currentHour,
   onUpdateHour,
   hourlyRecords,
+  onUpdateHourByIndex,
   onCloseHour,
   productData,
   BPH,
@@ -202,19 +204,29 @@ const DATA: HoraData[] = hourlyRecords
       .filter(c => c.contenido && c.contenido.trim() !== ""); // Filtro de vacíos
 
     return {
-      hora: record.hour,
-      phProducidos: record.producido,
-      // Se asigna el array; si está vacío, el componente decidirá si renderizarlo
-      comentarios: listaComentarios,
-      paradas: record.stops || []
-    };
+            hourIndex: record.hourIndex,
+            hora: record.hour,
+            estimado: record.estimado,
+            phProducidos: record.producido,
+            justificar: record.justificar,
+            justificado: record.justificado,
+            status: record.status,
+            closed: record.closed,
+            comentarios: listaComentarios,
+            paradas: record.stops || []
+          };
   });
 
 
 return (
   <div className="max-w-10xl mx-auto space-y-4 pb-10 px-2 sm:px-0">
       
-      <ProduccionHoraList data={DATA} />
+      <ProduccionHoraList
+        data={DATA}
+        onUpdateHour={(hourIndex, updates) => {
+          onUpdateHourByIndex(hourIndex, updates);
+        }}
+      />
       
 
       {/* ALERTA */}

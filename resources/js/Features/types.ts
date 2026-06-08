@@ -258,8 +258,14 @@ export interface Comentario {
 }
 
 export interface HoraData {
+  hourIndex: number;
   hora: string;
+  estimado: number;
   phProducidos: number;
+  justificar: number;
+  justificado: number;
+  status?: string;
+  closed?: boolean;
   comentarios?: Comentario[];
   paradas?: StopRecord[];
 }
