@@ -273,3 +273,22 @@ export interface HoraData {
 export interface ProduccionHoraListProps {
   data: HoraData[];
 }
+
+
+export interface StopCodeRankingFilters {
+  day?: string;
+  week?: string;
+  linea?: string;
+  brand?: string;
+  component?: string;
+  sort_by?: 'minutes' | 'frequency';
+  limit?: number;
+}
+
+export interface StopCodeRankingItem {
+  codigo: string;
+  descripcion: string;
+  tipo: string;
+  total_minutos: number;
+  total_frecuencia: number;
+}

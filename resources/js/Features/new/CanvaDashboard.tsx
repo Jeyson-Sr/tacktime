@@ -21,6 +21,7 @@ import IdleLogoutWatcher from '../Auth/IdleLogoutWatcher';
 import OeeProductionsTable from '../grafics/OeeProductionsTable';
 import OeeByLineChart from '../grafics/OeeByLineChart';
 import OeeDashboard from '../dashboard/OeeDashboard';
+import { StopCodesRankingChart } from '../dashboard/StopCodesRankingChart';
 
 
 
@@ -353,6 +354,11 @@ const ProyectosView: React.FC = () => (
       </div>
     </div>
   </div> */}
+  <div style={{ display: 'grid', gap: 24 }}>
+      {/* Otros gráficos */}
+
+      <StopCodesRankingChart />
+    </div>
   <OeeProductionsTable />
   
 

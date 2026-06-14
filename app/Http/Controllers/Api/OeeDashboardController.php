@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\DB;
 
@@ -243,4 +244,64 @@ class OeeDashboardController extends Controller
             'em' => $kpis['em'],
         ]);
     }
+    public function stopCodesRanking(Request $request)
+{
+    $query = DB::table('oee_stop_details as stops')
+        ->join('oee_hour_details as hours', 'stops.oee_hour_detail_id', '=', 'hours.id')
+        ->join('oee_productions as prod', 'hours.oee_production_id', '=', 'prod.id')
+        ->select(
+            'stops.codigo',
+            DB::raw('MAX(stops.descripcion) as descripcion'),
+            DB::raw('MAX(stops.tipo) as tipo'),
+            DB::raw('SUM(stops.tiempo_minutos) as total_minutos'),
+            DB::raw('SUM(stops.frecuencia) as total_frecuencia')
+        );
+
+    // Día exacto
+    if ($request->filled('day')) {
+        $query->whereDate('prod.fecha', $request->day);
+    }
+
+    // Semana
+    if ($request->filled('week')) {
+        $query->whereRaw('WEEK(prod.fecha, 1) = ?', [$request->week]);
+    }
+
+    // Línea
+    if ($request->filled('linea')) {
+        $query->where('prod.linea', $request->linea);
+    }
+
+    // Marca
+    if ($request->filled('brand')) {
+        $query->where('prod.brand', $request->brand);
+    }
+
+    // Componente
+    if ($request->filled('component')) {
+        $query->where(function ($q) use ($request) {
+            $q->where('stops.tipo', $request->component)
+              ->orWhere('stops.descripcion', 'LIKE', '%' . $request->component . '%');
+        });
+    }
+
+    $sortBy = $request->get('sort_by', 'minutes');
+
+    $query->groupBy('stops.codigo');
+
+    if ($sortBy === 'frequency') {
+        $query->orderByDesc('total_frecuencia');
+    } else {
+        $query->orderByDesc('total_minutos');
+    }
+
+    $limit = $request->get('limit', 10);
+
+    $data = $query->limit($limit)->get();
+
+    return response()->json([
+        'success' => true,
+        'data' => $data,
+    ]);
+}
 }

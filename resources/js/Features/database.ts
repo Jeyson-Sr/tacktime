@@ -19,7 +19,9 @@ import {
   Engineer, 
   Operator, 
   ProductionShift, 
-  StopCode
+  StopCode,
+  StopCodeRankingFilters,
+  StopCodeRankingItem
 } from './types';
 import { httpClient } from "./server/httpClient";
 
@@ -521,3 +523,29 @@ export const saveStopRecord = async (data: any): Promise<{ success: boolean; id:
  *   return response.json();
  * };
  */
+
+export const fetchStopCodesRanking = async (filters: StopCodeRankingFilters) => {
+  const params = new URLSearchParams();
+
+  Object.entries(filters).forEach(([key, value]) => {
+    if (value !== undefined && value !== null && value !== '') {
+      params.append(key, String(value));
+    }
+  });
+
+  const response = await fetch(`/dashboard/stop-codes-ranking?${params.toString()}`);
+
+  if (!response.ok) {
+    throw new Error('Error al obtener códigos de parada');
+  }
+
+  const result = await response.json();
+
+  return result.data.map((item: any) => ({
+    codigo: item.codigo,
+    descripcion: item.descripcion,
+    tipo: item.tipo,
+    total_minutos: Number(item.total_minutos),
+    total_frecuencia: Number(item.total_frecuencia),
+  }));
+};

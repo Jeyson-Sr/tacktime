@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\StopCodeController;
 
 
 Route::get('/dashboard/stop-codes', [StopCodeController::class, 'index']);
+Route::get('/dashboard/stop-codes-ranking', [OeeDashboardController::class, 'stopCodesRanking']);
 
 Route::prefix('dashboard/oee')->group(function () {
     Route::get('/line-efficiencies', [OeeDashboardController::class, 'lineEfficiencies']);
