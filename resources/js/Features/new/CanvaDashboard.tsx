@@ -357,7 +357,7 @@ const ProyectosView: React.FC = () => (
   <div style={{ display: 'grid', gap: 24 }}>
       {/* Otros gráficos */}
 
-      <StopCodesRankingChart />
+      {/* <StopCodesRankingChart /> */}
     </div>
   <OeeProductionsTable />
   

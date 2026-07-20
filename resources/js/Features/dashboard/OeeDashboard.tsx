@@ -13,7 +13,14 @@ import {
   Cell,
 } from "recharts";
 
+import DashboardFilters from "./DashboardFilters";
+import StopCodesRankingChart from "./StopCodesRankingChart";
+import ParetoStopsChart from "./ParetoStopsChart";
+
 import {
+  DashboardFilters as DashboardFiltersType,
+  DashboardFilterOptions,
+  fetchDashboardFilterOptions,
   fetchLineEfficiencies,
   fetchDailyOee,
   fetchLineSummary,
@@ -25,6 +32,16 @@ import {
   WeeklyOee,
   GlobalOee,
 } from "@/Features/server/oeeDashboard.api";
+
+const EMPTY_FILTERS: DashboardFiltersType = {
+  year: "",
+  month: "",
+  week: "",
+  day: "",
+  linea: "",
+  marca: "",
+  componente: "",
+};
 
 const COLORS = {
   green: "#00A443",
@@ -41,15 +58,34 @@ const COLORS = {
   soft: "#EEF0F3",
 };
 
+const safeNumber = (value: unknown) => {
+  const number = Number(value);
+  return Number.isFinite(number) ? number : 0;
+};
+
 const getOeeColor = (value: number) => {
   if (value >= 75) return COLORS.green;
   if (value >= 70) return COLORS.yellow;
   return COLORS.red;
 };
 
-const formatLinea = (linea: string) => {
+const formatLinea = (linea?: string) => {
+  if (!linea) return "-";
   const number = linea.replace(/\D/g, "").padStart(2, "0");
   return number ? `L${number}` : linea;
+};
+
+const getDailyLabel = (row: DailyOee) => {
+  return row.dia ?? row.day ?? row.name ?? row.fecha ?? "-";
+};
+
+const getWeeklyLabel = (row: WeeklyOee) => {
+  return row.semana ?? row.label ?? row.name ?? (row.week ? `S${row.week}` : "-");
+};
+
+const cleanProductionFilters = (filters: DashboardFiltersType): DashboardFiltersType => {
+  const { componente, sort_by, limit, ...productionFilters } = filters;
+  return productionFilters;
 };
 
 const Card = ({
@@ -72,7 +108,7 @@ const Card = ({
 };
 
 const GaugeCard = ({ title, value }: { title: string; value: number }) => {
-  const safeValue = Math.min(Math.max(value || 0, 0), 100);
+  const safeValue = Math.min(Math.max(safeNumber(value), 0), 100);
 
   const radius = 120;
   const stroke = 38;
@@ -138,7 +174,7 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 
       {payload.map((item: any) => (
         <p key={item.dataKey} className="text-sm font-bold text-gray-600">
-          {item.name}: {Number(item.value).toFixed(1)} %
+          {item.name}: {safeNumber(item.value).toFixed(1)} %
         </p>
       ))}
     </div>
@@ -151,11 +187,30 @@ const OeeDashboard: React.FC = () => {
   const [lineSummary, setLineSummary] = useState<LineSummary[]>([]);
   const [weeklyOee, setWeeklyOee] = useState<WeeklyOee[]>([]);
   const [global, setGlobal] = useState<GlobalOee>({ oee: 0, em: 0 });
+
+  const [filters, setFilters] = useState<DashboardFiltersType>(EMPTY_FILTERS);
+  const [appliedFilters, setAppliedFilters] =
+    useState<DashboardFiltersType>(EMPTY_FILTERS);
+  const [filterOptions, setFilterOptions] =
+    useState<DashboardFilterOptions | null>(null);
+
   const [loading, setLoading] = useState(true);
 
-  const loadDashboard = async () => {
+  const loadFilterOptions = async () => {
+    try {
+      const options = await fetchDashboardFilterOptions();
+      setFilterOptions(options);
+    } catch (error) {
+      console.error("Error cargando opciones de filtros:", error);
+      setFilterOptions(null);
+    }
+  };
+
+  const loadDashboard = async (currentFilters: DashboardFiltersType = EMPTY_FILTERS) => {
     try {
       setLoading(true);
+
+      const productionFilters = cleanProductionFilters(currentFilters);
 
       const [
         lineEfficienciesData,
@@ -164,31 +219,57 @@ const OeeDashboard: React.FC = () => {
         weeklyOeeData,
         globalData,
       ] = await Promise.all([
-        fetchLineEfficiencies(),
-        fetchDailyOee(),
-        fetchLineSummary(),
-        fetchWeeklyOee(),
-        fetchGlobalOee(),
+        fetchLineEfficiencies(productionFilters),
+        fetchDailyOee(productionFilters),
+        fetchLineSummary(productionFilters),
+        fetchWeeklyOee(productionFilters),
+        fetchGlobalOee(productionFilters),
       ]);
 
-      setLineEfficiencies(lineEfficienciesData);
-      setDailyOee(dailyOeeData);
-      setLineSummary(lineSummaryData);
-      setWeeklyOee(weeklyOeeData);
-      setGlobal(globalData);
+      setLineEfficiencies(
+        Array.isArray(lineEfficienciesData) ? lineEfficienciesData : []
+      );
+      setDailyOee(Array.isArray(dailyOeeData) ? dailyOeeData : []);
+      setLineSummary(Array.isArray(lineSummaryData) ? lineSummaryData : []);
+      setWeeklyOee(Array.isArray(weeklyOeeData) ? weeklyOeeData : []);
+      setGlobal({
+        oee: safeNumber(globalData?.oee ?? globalData?.OEE),
+        em: safeNumber(globalData?.em ?? globalData?.EM),
+      });
     } catch (error) {
       console.error("Error cargando dashboard OEE:", error);
+      setLineEfficiencies([]);
+      setDailyOee([]);
+      setLineSummary([]);
+      setWeeklyOee([]);
+      setGlobal({ oee: 0, em: 0 });
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    loadDashboard();
+    loadFilterOptions();
+    loadDashboard(EMPTY_FILTERS);
   }, []);
 
+  const handleApplyFilters = () => {
+    console.log("Filtros aplicados:", filters);
+    setAppliedFilters(filters);
+    loadDashboard(filters);
+  };
+
+  const handleClearFilters = () => {
+    setFilters(EMPTY_FILTERS);
+    setAppliedFilters(EMPTY_FILTERS);
+    loadDashboard(EMPTY_FILTERS);
+  };
+
   const totalVolCu = useMemo(() => {
-    return lineSummary.reduce((sum, row) => sum + Number(row.vol_cu || 0), 0);
+    return lineSummary.reduce(
+      (sum, row) => sum + safeNumber(row.vol_cu ?? row.ph),
+      0
+    );
   }, [lineSummary]);
 
   if (loading) {
@@ -203,23 +284,32 @@ const OeeDashboard: React.FC = () => {
 
   return (
     <div className="w-full min-h-screen bg-[#F5F7F8] p-6 space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-black text-[#006B7A]">
             Dashboard OEE
           </h1>
           <p className="text-sm font-bold text-gray-500">
-            Eficiencia por línea, día, semana y resumen global
+            Eficiencia por línea, día, semana, paradas y resumen global
           </p>
         </div>
 
         <button
-          onClick={loadDashboard}
+          type="button"
+          onClick={() => loadDashboard(appliedFilters)}
           className="px-5 py-3 rounded-2xl bg-[#006B7A] text-white font-black shadow-md hover:bg-[#005260]"
         >
           Actualizar
         </button>
       </div>
+
+      <DashboardFilters
+        filters={filters}
+        options={filterOptions}
+        onChange={setFilters}
+        onApply={handleApplyFilters}
+        onClear={handleClearFilters}
+      />
 
       <Card title="Distribución de Eficiencias % [OEE & EM]">
         <div className="h-[370px]">
@@ -243,13 +333,13 @@ const OeeDashboard: React.FC = () => {
 
               <Bar dataKey="oee" name="OEE %" radius={[8, 8, 0, 0]}>
                 {lineEfficiencies.map((item) => (
-                  <Cell key={item.linea} fill={getOeeColor(item.oee)} />
+                  <Cell key={item.linea} fill={getOeeColor(safeNumber(item.oee ?? item.OEE))} />
                 ))}
 
                 <LabelList
                   dataKey="oee"
                   position="insideTop"
-                  formatter={(value: number) => `${value.toFixed(1)} %`}
+                  formatter={(value: number) => `${safeNumber(value).toFixed(1)} %`}
                   angle={-90}
                   fill="#FFFFFF"
                   fontWeight={900}
@@ -265,14 +355,6 @@ const OeeDashboard: React.FC = () => {
                 strokeDasharray="6 6"
                 dot={{ r: 5, fill: "#555", strokeWidth: 0 }}
               />
-
-              <LabelList
-                dataKey="em"
-                position="top"
-                formatter={(value: number) => `${value.toFixed(1)} %`}
-                fill="#555"
-                fontWeight={900}
-              />
             </ComposedChart>
           </ResponsiveContainer>
         </div>
@@ -281,6 +363,11 @@ const OeeDashboard: React.FC = () => {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <GaugeCard title="OEE %" value={global.oee} />
         <GaugeCard title="EM %" value={global.em} />
+      </div>
+
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+        <ParetoStopsChart filters={appliedFilters} />
+        <StopCodesRankingChart filters={appliedFilters} />
       </div>
 
       <Card title="OEE % Por Día">
@@ -292,7 +379,7 @@ const OeeDashboard: React.FC = () => {
             >
               <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={COLORS.grid} />
               <XAxis
-                dataKey="dia"
+                dataKey={getDailyLabel}
                 tick={{ fontWeight: 700, fill: COLORS.muted }}
               />
               <YAxis
@@ -303,14 +390,17 @@ const OeeDashboard: React.FC = () => {
               <Tooltip content={<CustomTooltip />} />
 
               <Bar dataKey="oee" name="OEE %" radius={[8, 8, 0, 0]}>
-                {dailyOee.map((item) => (
-                  <Cell key={item.fecha} fill={getOeeColor(item.oee)} />
+                {dailyOee.map((item, index) => (
+                  <Cell
+                    key={`${item.fecha ?? item.dia ?? index}`}
+                    fill={getOeeColor(safeNumber(item.oee ?? item.OEE))}
+                  />
                 ))}
 
                 <LabelList
                   dataKey="oee"
                   position="insideTop"
-                  formatter={(value: number) => `${value.toFixed(1)} %`}
+                  formatter={(value: number) => `${safeNumber(value).toFixed(1)} %`}
                   angle={-90}
                   fill="#FFFFFF"
                   fontWeight={900}
@@ -350,29 +440,31 @@ const OeeDashboard: React.FC = () => {
                   </td>
 
                   <td className="p-3 text-right font-bold text-gray-700">
-                    {Number(row.vol_cu || 0).toLocaleString()}
+                    {safeNumber(row.vol_cu ?? row.ph).toLocaleString()}
                   </td>
 
                   <td
                     className="p-3 text-right font-black"
-                    style={{ color: getOeeColor(row.oee) }}
+                    style={{ color: getOeeColor(safeNumber(row.oee)) }}
                   >
-                    {row.oee.toFixed(1)} %
+                    {safeNumber(row.oee).toFixed(1)} %
                   </td>
 
                   <td
                     className="p-3 text-right font-black"
-                    style={{ color: getOeeColor(row.em) }}
+                    style={{ color: getOeeColor(safeNumber(row.em)) }}
                   >
-                    {row.em.toFixed(1)} %
+                    {safeNumber(row.em).toFixed(1)} %
                   </td>
 
-                  <td className="p-3 text-right">{row.opd.toFixed(1)} %</td>
-                  <td className="p-3 text-right">{row.or.toFixed(1)} %</td>
-                  <td className="p-3 text-right">{row.pd.toFixed(1)} %</td>
-                  <td className="p-3 text-right">{row.rd.toFixed(1)} %</td>
-                  <td className="p-3 text-right">{row.eq.toFixed(1)} %</td>
-                  <td className="p-3 font-bold text-gray-700">{row.unidad_negocio}</td>
+                  <td className="p-3 text-right">{safeNumber(row.opd).toFixed(1)} %</td>
+                  <td className="p-3 text-right">{safeNumber(row.or).toFixed(1)} %</td>
+                  <td className="p-3 text-right">{safeNumber(row.pd).toFixed(1)} %</td>
+                  <td className="p-3 text-right">{safeNumber(row.rd).toFixed(1)} %</td>
+                  <td className="p-3 text-right">{safeNumber(row.eq).toFixed(1)} %</td>
+                  <td className="p-3 font-bold text-gray-700">
+                    {row.unidad_negocio ?? "GENERAL"}
+                  </td>
                 </tr>
               ))}
             </tbody>
@@ -381,8 +473,8 @@ const OeeDashboard: React.FC = () => {
               <tr className="bg-[#006B7A] text-white font-black">
                 <td className="p-3">Total</td>
                 <td className="p-3 text-right">{totalVolCu.toLocaleString()}</td>
-                <td className="p-3 text-right">{global.oee.toFixed(1)} %</td>
-                <td className="p-3 text-right">{global.em.toFixed(1)} %</td>
+                <td className="p-3 text-right">{safeNumber(global.oee).toFixed(1)} %</td>
+                <td className="p-3 text-right">{safeNumber(global.em).toFixed(1)} %</td>
                 <td className="p-3 text-right">-</td>
                 <td className="p-3 text-right">-</td>
                 <td className="p-3 text-right">-</td>
@@ -412,20 +504,23 @@ const OeeDashboard: React.FC = () => {
               />
               <YAxis
                 type="category"
-                dataKey="semana"
+                dataKey={getWeeklyLabel}
                 tick={{ fontWeight: 900, fill: COLORS.muted }}
               />
               <Tooltip content={<CustomTooltip />} />
 
               <Bar dataKey="oee" name="OEE %" radius={[0, 12, 12, 0]}>
-                {weeklyOee.map((item) => (
-                  <Cell key={item.semana} fill={getOeeColor(item.oee)} />
+                {weeklyOee.map((item, index) => (
+                  <Cell
+                    key={`${item.semana ?? item.week ?? item.label ?? index}`}
+                    fill={getOeeColor(safeNumber(item.oee ?? item.OEE))}
+                  />
                 ))}
 
                 <LabelList
                   dataKey="oee"
                   position="insideLeft"
-                  formatter={(value: number) => `${value.toFixed(1)} %`}
+                  formatter={(value: number) => `${safeNumber(value).toFixed(1)} %`}
                   fill="#FFFFFF"
                   fontWeight={900}
                 />
