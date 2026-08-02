@@ -55,64 +55,68 @@ private function formatProductionOrder($op, $fecha = null): ?string
 
     return DB::transaction(function () use ($productionData, $hourlyRecords, $formattedOp) {
 
-        DB::table('oee_productions')->updateOrInsert(
-            [
-                'fecha' => $productionData['fecha'],
-                'turno' => $productionData['turno'],
-                'linea' => $productionData['linea'],
+        $match = [
+            'fecha' => $productionData['fecha'],
+            'turno' => $productionData['turno'],
+            'linea' => $productionData['linea'],
+            'op' => $formattedOp,
+        ];
 
-                // ✅ Guardamos y buscamos con OP formateada
-                'op' => $formattedOp,
-            ],
-            [
-                'ingeniero' => $productionData['ingeniero'] ?? null,
-                'operador' => $productionData['operador'] ?? null,
-                'sku' => $productionData['sku'] ?? null,
-                'descripcion' => $productionData['descripccion'] ?? null,
-                'formato' => $productionData['formato'] ?? null,
-                'marca' => $productionData['marca'] ?? null,
-                'sabor' => $productionData['sabor'] ?? null,
-                'pallets_por_hora' => $productionData['palletsPorHora'] ?? 0,
-                'bph' => $productionData['bph'] ?? 0,
-                'updated_at' => now(),
-                'created_at' => now(),
-            ]
-        );
+        $existingProduction = DB::table('oee_productions')->where($match)->first();
+
+        $productionValues = [
+            'ingeniero' => $productionData['ingeniero'] ?? null,
+            'operador' => $productionData['operador'] ?? null,
+            'sku' => $productionData['sku'] ?? null,
+            'descripcion' => $productionData['descripccion'] ?? $productionData['descripcion'] ?? null,
+            'formato' => $productionData['formato'] ?? null,
+            'marca' => $productionData['marca'] ?? null,
+            'sabor' => $productionData['sabor'] ?? null,
+            'pallets_por_hora' => $productionData['palletsPorHora'] ?? 0,
+            'bph' => $productionData['bph'] ?? 0,
+            'updated_at' => now(),
+        ];
+
+        if (! $existingProduction) {
+            $productionValues['created_at'] = now();
+        }
+
+        DB::table('oee_productions')->updateOrInsert($match, $productionValues);
 
         $production = DB::table('oee_productions')
-            ->where('fecha', $productionData['fecha'])
-            ->where('turno', $productionData['turno'])
-            ->where('linea', $productionData['linea'])
-
-            // ✅ También buscamos con OP formateada
-            ->where('op', $formattedOp)
+            ->where($match)
             ->first();
 
         foreach ($hourlyRecords as $hour) {
-            DB::table('oee_hour_details')->updateOrInsert(
-                [
-                    'oee_production_id' => $production->id,
-                    'hour_index' => $hour['hourIndex'],
-                ],
-                [
-                    'hour_range' => $hour['hour'],
-                    'estimado' => $hour['estimado'] ?? 0,
-                    'producido' => $hour['producido'] ?? 0,
-                    'minutos_a_justificar' => $hour['justificar'] ?? 0,
-                    'minutos_justificados' => $hour['justificado'] ?? 0,
-                    'status' => $hour['status'] ?? 'blue',
-                    'closed' => $hour['closed'] ?? false,
-                    'comment_mnf' => $hour['comments']['mnf'] ?? null,
-                    'comment_mantto' => $hour['comments']['mantto'] ?? null,
-                    'comment_calidad' => $hour['comments']['calidad'] ?? null,
-                    'updated_at' => now(),
-                    'created_at' => now(),
-                ]
-            );
+            $hourMatch = [
+                'oee_production_id' => $production->id,
+                'hour_index' => $hour['hourIndex'],
+            ];
+
+            $existingHour = DB::table('oee_hour_details')->where($hourMatch)->first();
+
+            $hourValues = [
+                'hour_range' => $hour['hour'],
+                'estimado' => $hour['estimado'] ?? 0,
+                'producido' => $hour['producido'] ?? 0,
+                'minutos_a_justificar' => $hour['justificar'] ?? 0,
+                'minutos_justificados' => $hour['justificado'] ?? 0,
+                'status' => $hour['status'] ?? 'blue',
+                'closed' => $hour['closed'] ?? false,
+                'comment_mnf' => $hour['comments']['mnf'] ?? null,
+                'comment_mantto' => $hour['comments']['mantto'] ?? null,
+                'comment_calidad' => $hour['comments']['calidad'] ?? null,
+                'updated_at' => now(),
+            ];
+
+            if (! $existingHour) {
+                $hourValues['created_at'] = now();
+            }
+
+            DB::table('oee_hour_details')->updateOrInsert($hourMatch, $hourValues);
 
             $hourDetail = DB::table('oee_hour_details')
-                ->where('oee_production_id', $production->id)
-                ->where('hour_index', $hour['hourIndex'])
+                ->where($hourMatch)
                 ->first();
 
             DB::table('oee_stop_details')
@@ -215,7 +219,7 @@ private function formatProductionOrder($op, $fecha = null): ?string
             $tiempoProductivo = max(0, $tiempoEfectivo - $row->minutos_paradas);
 
             $oee = $tiempoEfectivo > 0
-                ? ($tiempoProductivo / $tiempoEfectivo) * 100
+                ? min(($tiempoProductivo / $tiempoEfectivo) * 100, 100)
                 : 0;
 
             return [

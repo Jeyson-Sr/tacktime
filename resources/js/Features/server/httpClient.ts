@@ -25,10 +25,19 @@ export async function httpClient<T>(
     ...options,
   });
 
+  const text = await response.text();
+
   if (!response.ok) {
-    const errorText = await response.text();
-    throw new Error(errorText || "Error en la petición al servidor");
+    throw new Error(text || `Error ${response.status} en ${endpoint}`);
   }
 
-  return response.json();
+  if (!text) {
+    return undefined as T;
+  }
+
+  try {
+    return JSON.parse(text) as T;
+  } catch {
+    throw new Error(`Respuesta inválida del servidor en ${endpoint}`);
+  }
 }

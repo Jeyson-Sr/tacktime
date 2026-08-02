@@ -28,14 +28,26 @@ const AJE = {
 };
 
 const TIPO_MAP: Record<string, string> = {
-  'EQ': 'EQUIPO',
-  'OPD': 'OPERATIVAS',
-  'OR': 'ORGANIZACIONALES',
-  'PD': 'PLANIFICADAS',
-  'QD': 'PERDIDAS DE CALIDAD',
-  'RD': 'RUTINARIAS',
-  'TNP': 'TIEMPO NO PROGRAMADO'
+  EQ: 'EQUIPO',
+  OPD: 'OPERATIVAS',
+  OR: 'ORGANIZACIONALES',
+  PD: 'PLANIFICADAS',
+  QD: 'PERDIDAS DE CALIDAD',
+  RD: 'RUTINARIAS',
+  TNP: 'TIEMPO NO PROGRAMADO',
+  EQUIPO: 'EQUIPO',
+  OPERATIVAS: 'OPERATIVAS',
+  ORGANIZACIONALES: 'ORGANIZACIONALES',
+  PLANIFICADAS: 'PLANIFICADAS',
+  RUTINARIAS: 'RUTINARIAS',
+  'PERDIDAS DE CALIDAD': 'PERDIDAS DE CALIDAD',
+  'TIEMPO NO PROGRAMADO': 'TIEMPO NO PROGRAMADO',
 };
+
+function resolveStopTipo(raw: string | undefined | null): string {
+  const key = String(raw || '').trim().toUpperCase();
+  return TIPO_MAP[key] || 'EQUIPO';
+}
 
 interface StopControlProps {
   currentHour: HourlyProduction;
@@ -84,6 +96,14 @@ const StopControl: React.FC<StopControlProps> = ({
   const [alerta, setAlerta] = useState('');
   const lastTap = useRef(0);
 
+  useEffect(() => {
+    setComments({
+      mnf: currentHour.comments?.mnf || '',
+      mantto: currentHour.comments?.mantto || '',
+      calidad: currentHour.comments?.calidad || '',
+    });
+  }, [currentHour.hourIndex, currentHour.comments?.mnf, currentHour.comments?.mantto, currentHour.comments?.calidad]);
+
   const handleTap = () => {
     const now = Date.now();
     const diff = now - lastTap.current;
@@ -115,7 +135,7 @@ const StopControl: React.FC<StopControlProps> = ({
       ...newStop,
       codigo: cleanCode,
       descripcion: found ? found.detalle : '',
-      tipo: found ? (TIPO_MAP[found.tipo_n0] || 'EQUIPO') : ''
+      tipo: found ? resolveStopTipo(found.tipo_n0 || found.tipo_parada) : ''
     });
   };
 
@@ -189,13 +209,17 @@ const StopControl: React.FC<StopControlProps> = ({
       setAlerta('Debe ingresar comentarios en MNF');
       return;
     }
-    
-    setComments({
-      ...currentHour.comments,
-      mnf: '',
-      mantto: '',
-      calidad: ''
-    });
+
+    const justificar = Number(currentHour.justificar) || 0;
+    const justificado = Number(currentHour.justificado) || 0;
+    if (justificar > 0 && Math.abs(justificar - justificado) > 0.05) {
+      setAlerta('');
+      setAlerta(
+        `Debe justificar exactamente ${justificar.toFixed(1)} min (actual: ${justificado.toFixed(1)}).`
+      );
+      return;
+    }
+
     onUpdateHour({ comments });
     onCloseHour();
   };
@@ -233,6 +257,7 @@ const DATA: HoraData[] = hourlyRecords
             justificado: record.justificado,
             status: record.status,
             closed: record.closed,
+            comments: record.comments,
             comentarios: listaComentarios,
             paradas: record.stops || []
           };
@@ -499,7 +524,7 @@ return (
           ...prev,
           codigo: code.codigo,
           descripcion: code.detalle,
-          tipo: TIPO_MAP[code.tipo_n0] || 'EQUIPO'
+          tipo: resolveStopTipo(code.tipo_n0 || code.tipo_parada)
         }))}
       />
     </div>

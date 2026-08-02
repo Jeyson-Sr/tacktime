@@ -164,10 +164,16 @@ function HoraRowEditable({ item, acumulado, index, onUpdateHour, onDelete }: Hor
   };
 
   const handleMinutesChange = (stopIndex: number, value: number) => {
+    const requested = Math.max(0, Number(value) || 0);
+    const otherMinutes = paradas.reduce(
+      (sum, stop, idx) => (idx === stopIndex ? sum : sum + (Number(stop.tiempoMinutos) || 0)),
+      0
+    );
+    const maxAllowed = Math.max(0, round1((item.justificar ?? 0) - otherMinutes));
+    const tiempoMinutos = Math.min(requested, maxAllowed);
+
     const nuevasParadas = paradas.map((stop, idx) =>
-      idx === stopIndex
-        ? { ...stop, tiempoMinutos: Math.max(0, Number(value) || 0) }
-        : stop
+      idx === stopIndex ? { ...stop, tiempoMinutos } : stop
     );
 
     updateStops(nuevasParadas);
@@ -179,12 +185,18 @@ function HoraRowEditable({ item, acumulado, index, onUpdateHour, onDelete }: Hor
   };
 
   const handleCommentChange = (comentario: Comentario, value: string, fallbackIndex: number) => {
-    const tipoComentario = (comentario as any).tipo;
+    const tipoComentario = (comentario as any).tipo as string | undefined;
 
     if (tipoComentario) {
+      const baseComments = item.comments ?? {
+        mnf: '',
+        mantto: '',
+        calidad: '',
+      };
+
       onUpdateHour(hourIndex, {
         comments: {
-          ...(item.comments ?? {}),
+          ...baseComments,
           [tipoComentario]: value,
         },
       });
@@ -449,12 +461,16 @@ export default function ProduccionHoraList({
   onUpdateHour: (hourIndex: number, updates: any) => void;
 }) {
   const handleDelete = (hourIndex: number) => {
-    // No borro la hora completa; limpio producción/paradas para que no quede fantasma.
+    // Limpia producción/paradas y reabre la hora para que no cuente en OEE
     onUpdateHour(hourIndex, {
       producido: 0,
       justificar: 0,
       justificado: 0,
       stops: [],
+      closed: false,
+      producidoIngresado: false,
+      status: 'blue',
+      comments: { mnf: '', mantto: '', calidad: '' },
     });
   };
 

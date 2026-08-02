@@ -23,7 +23,7 @@ export interface ProductionData {
   formato: string;                    // Formato del producto (0.400, 0.300, 0.625)
   marca: string;                      // Marca del producto (KR, BIG, VOLT, etc)
   sabor: string;                      // Sabor del producto
-  palletsPorHora: number | any;            // Pallets estimados por hora (calculado auto)
+  palletsPorHora: number;                 // Pallets estimados por hora (calculado auto)
   bph: number;
   sku: number;     
   descripccion: string;                   // Descripción del producto

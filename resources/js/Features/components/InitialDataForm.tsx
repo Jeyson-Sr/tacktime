@@ -182,10 +182,10 @@ useEffect(() => {
     return filtrados;
   }, [busqueda, linea]);
 
-  // Cálculo de Pallets
+  // Cálculo de Pallets (number, no string de toFixed)
   const palletsPorHora = useMemo(() => {
     if (!productoSel) return 0;
-    return (productoSel.bph / productoSel.um / productoSel.paqPallet).toFixed(1);
+    return Number((productoSel.bph / productoSel.um / productoSel.paqPallet).toFixed(1));
   }, [productoSel]);
 
   // Manejo de envío final con la estructura exacta solicitada
@@ -197,9 +197,17 @@ useEffect(() => {
       return;
     }
 
+    // Fecha local de planta (evita desfase UTC con toISOString)
+    const now = new Date();
+    const fechaLocal = [
+      now.getFullYear(),
+      String(now.getMonth() + 1).padStart(2, '0'),
+      String(now.getDate()).padStart(2, '0'),
+    ].join('-');
+
     const finalData = {
       bph: productoSel.bph,
-      fecha: new Date().toISOString().split('T')[0], // Formato "2026-03-15"
+      fecha: fechaLocal,
       formato: productoSel.formato.toString(),
       ingeniero: ingeniero,
       linea: linea,

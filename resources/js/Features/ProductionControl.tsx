@@ -27,6 +27,14 @@ const [isSavingShift, setIsSavingShift] = useState(false);
 const [isShiftFinished, setIsShiftFinished] = useState(false);
 const [finishShiftMessage, setFinishShiftMessage] = useState('');
 
+  const persistState = async (state: AppState) => {
+    try {
+      await syncOeeProduction(state);
+    } catch (error) {
+      console.error('Error sincronizando producción:', error);
+    }
+  };
+
   // Inicializar producción
   const handleInitializeProduction = async (data: ProductionData) => {
   const shiftHours = await fetchShiftHours(data.turno);
@@ -34,7 +42,7 @@ const [finishShiftMessage, setFinishShiftMessage] = useState('');
   const hourlyRecords: HourlyProduction[] = shiftHours.map((hour, index) => ({
     hour,
     hourIndex: index,
-    estimado: data.palletsPorHora,
+    estimado: Number(data.palletsPorHora) || 0,
     producido: 0,
     justificar: 0,
     justificado: 0,
@@ -52,13 +60,7 @@ const [finishShiftMessage, setFinishShiftMessage] = useState('');
   };
 
   setAppState(newState);
-
-  try {
-    await syncOeeProduction(newState);
-    console.log('Producción creada en DB');
-  } catch (error) {
-    console.error('Error guardando producción inicial:', error);
-  }
+  await persistState(newState);
 };
 
   // Actualizar hora actual
@@ -86,9 +88,19 @@ const [finishShiftMessage, setFinishShiftMessage] = useState('');
 
     if (realIndex === -1) return prev;
 
+    const current = newRecords[realIndex];
+    const nextComments =
+      updates.comments !== undefined
+        ? {
+            ...(current.comments ?? { mnf: '', mantto: '', calidad: '' }),
+            ...updates.comments,
+          }
+        : current.comments;
+
     newRecords[realIndex] = {
-      ...newRecords[realIndex],
+      ...current,
       ...updates,
+      comments: nextComments,
     };
 
     return {
@@ -98,7 +110,7 @@ const [finishShiftMessage, setFinishShiftMessage] = useState('');
   });
 };
 
-  // Cerrar hora y avanzar
+  // Cerrar hora, avanzar y persistir (evita pérdida si refresh/logout)
   const closeCurrentHour = () => {
   setAppState(prev => {
     const newRecords = [...prev.hourlyRecords];
@@ -110,13 +122,17 @@ const [finishShiftMessage, setFinishShiftMessage] = useState('');
 
     const isLastHour = prev.currentHourIndex >= newRecords.length - 1;
 
-    return {
+    const newState: AppState = {
       ...prev,
       hourlyRecords: newRecords,
       currentHourIndex: isLastHour
         ? prev.currentHourIndex
         : prev.currentHourIndex + 1
     };
+
+    void persistState(newState);
+
+    return newState;
   });
 };
 
@@ -252,7 +268,7 @@ const canFinishShift =
                   formato: appState.productionData.formato,
                   marca: appState.productionData.marca,
                   sabor: appState.productionData.sabor,
-                  palletsPorHora: appState.productionData.palletsPorHora
+                palletsPorHora: Number(appState.productionData.palletsPorHora) || 0
                 }}
                 BPH={appState.productionData.bph}
                 SKU={appState.productionData.sku}

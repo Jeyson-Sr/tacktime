@@ -38,9 +38,8 @@ class OeeDashboardController extends Controller
     }
 
     /**
-     * Calcula OEE / EM por tiempo.
-     * Importante: usa horas existentes, no solo cerradas, para que el dashboard
-     * no quede en 0 durante pruebas o turnos abiertos.
+     * Calcula OEE / EM por tiempo (misma lógica que calculations.ts).
+     * El filtrado a horas cerradas se hace en hoursQuery (default closed_only=true).
      */
     private function calculateFromHours($hours): array
     {
@@ -99,8 +98,8 @@ class OeeDashboardController extends Controller
         $totalPerdidas = $minsEQ + $minsOPD + $minsOR + $minsPD + $minsQD + $minsRD;
         $tiempoProductivo = max(0, $tiempoEfectivo - $totalPerdidas);
 
-        $oee = ($tiempoProductivo / $tiempoEfectivo) * 100;
-        $em = (($tiempoEfectivo - $minsEQ) / $tiempoEfectivo) * 100;
+        $oee = min(($tiempoProductivo / $tiempoEfectivo) * 100, 100);
+        $em = min((($tiempoEfectivo - $minsEQ) / $tiempoEfectivo) * 100, 100);
 
         return [
             'oee' => round($oee, 1),
@@ -125,6 +124,10 @@ class OeeDashboardController extends Controller
 
         if ($request->filled('week')) {
             $query->whereRaw('WEEK(prod.fecha, 1) = ?', [$request->week]);
+            // Evita mezclar la misma semana de años distintos si no viene year
+            if (! $request->filled('year')) {
+                $query->whereYear('prod.fecha', (int) date('Y'));
+            }
         }
 
         if ($request->filled('day')) {
@@ -155,8 +158,8 @@ class OeeDashboardController extends Controller
 
     /**
      * Query base de horas para dashboard.
-     * No filtra por closed para no dejar los gráficos en blanco si el turno aún no cerró.
-     * Si necesitas solo cerradas, llama /dashboard/oee/...?...&closed_only=1
+     * Por defecto solo horas cerradas (alineado con calculateKPIs del frontend).
+     * Para incluir abiertas: ?closed_only=0
      */
     private function hoursQuery(Request $request)
     {
@@ -164,11 +167,16 @@ class OeeDashboardController extends Controller
             ->join('oee_productions as prod', 'prod.id', '=', 'h.oee_production_id')
             ->select('h.id', 'h.estimado', 'h.producido', 'h.closed', 'prod.fecha', 'prod.linea', 'prod.marca');
 
-        if ($request->boolean('closed_only')) {
+        if ($request->boolean('closed_only', true)) {
             $query->where('h.closed', 1);
         }
 
         return $query;
+    }
+
+    private function shouldUseClosedOnly(Request $request): bool
+    {
+        return $request->boolean('closed_only', true);
     }
 
     public function filterOptions()
@@ -384,7 +392,7 @@ class OeeDashboardController extends Controller
                 ->join('oee_productions as prod', 'prod.id', '=', 'h.oee_production_id')
                 ->where('prod.linea', $line->linea);
 
-            if ($request->boolean('closed_only')) {
+            if ($this->shouldUseClosedOnly($request)) {
                 $volumeQuery->where('h.closed', 1);
             }
 
@@ -427,7 +435,7 @@ class OeeDashboardController extends Controller
                 DB::raw('SUM(stops.frecuencia) as total_frecuencia')
             );
 
-        if ($request->boolean('closed_only')) {
+        if ($this->shouldUseClosedOnly($request)) {
             $query->where('hours.closed', 1);
         }
 
@@ -467,7 +475,7 @@ class OeeDashboardController extends Controller
                 DB::raw('SUM(stops.frecuencia) as total_frecuencia')
             );
 
-        if ($request->boolean('closed_only')) {
+        if ($this->shouldUseClosedOnly($request)) {
             $query->where('hours.closed', 1);
         }
 

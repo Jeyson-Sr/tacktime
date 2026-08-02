@@ -533,7 +533,7 @@ export const fetchStopCodesRanking = async (filters: StopCodeRankingFilters) => 
     }
   });
 
-  const response = await fetch(`/dashboard/stop-codes-ranking?${params.toString()}`);
+  const response = await fetch(`/dashboard/oee/stop-codes-ranking?${params.toString()}`);
 
   if (!response.ok) {
     throw new Error('Error al obtener códigos de parada');

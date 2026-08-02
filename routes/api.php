@@ -3,7 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\OeeProductionController;
 
-Route::prefix('oee')->group(function () {
+Route::middleware(['auth', 'verified'])->prefix('oee')->group(function () {
     Route::post('/sync', [OeeProductionController::class, 'sync']);
 
     Route::get('/productions', [OeeProductionController::class, 'index']);

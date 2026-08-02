@@ -1,29 +1,26 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { router } from '@inertiajs/react';
-import { Timer, AlertTriangle } from 'lucide-react';
+import { AlertTriangle } from 'lucide-react';
 
- function IdleLogoutWatcher() {
-    // const TOTAL_IDLE_TIME = 10 * 60; // 10 minutos en segundos
-    // const WARNING_TIME = 2 * 60;    // Mostrar aviso cuando falten 2 min
-    
-    const TOTAL_IDLE_TIME = 1 * 60; // 2 minutos en segundos
-    const WARNING_TIME = 1 * 30;    // Mostrar aviso cuando falte 1 min
-    
+function IdleLogoutWatcher() {
+    const TOTAL_IDLE_TIME = 10 * 60; // 10 minutos
+    const WARNING_TIME = 2 * 60; // aviso cuando falten 2 min
+
     const [timeLeft, setTimeLeft] = useState(TOTAL_IDLE_TIME);
     const [showWarning, setShowWarning] = useState(false);
+    const loggingOutRef = useRef(false);
 
     const handleLogout = useCallback(() => {
+        if (loggingOutRef.current) return;
+        loggingOutRef.current = true;
         router.post('/logout');
-        // Redirigir a la página de login
-        router.visit('/login');
     }, []);
 
+    // Temporizador + listeners: NO depende de timeLeft (evita remount cada segundo)
     useEffect(() => {
-        // 1. El temporizador principal que baja cada segundo
         const timer = setInterval(() => {
             setTimeLeft((prev) => {
                 if (prev <= 1) {
-                    clearInterval(timer);
                     handleLogout();
                     return 0;
                 }
@@ -31,28 +28,23 @@ import { Timer, AlertTriangle } from 'lucide-react';
             });
         }, 1000);
 
-        // 2. Detectar si el tiempo restante es bajo para mostrar el aviso
-        if (timeLeft <= WARNING_TIME) {
-            setShowWarning(true);
-        } else {
-            setShowWarning(false);
-        }
-
-        // 3. Reiniciar el tiempo si el usuario se mueve
         const resetTimer = () => {
             setTimeLeft(TOTAL_IDLE_TIME);
         };
 
-        const events = ['mousedown', 'keydown', 'scroll', 'touchstart'];
-        events.forEach(e => window.addEventListener(e, resetTimer));
+        const events = ['mousedown', 'keydown', 'scroll', 'touchstart', 'mousemove'];
+        events.forEach((e) => window.addEventListener(e, resetTimer));
 
         return () => {
             clearInterval(timer);
-            events.forEach(e => window.removeEventListener(e, resetTimer));
+            events.forEach((e) => window.removeEventListener(e, resetTimer));
         };
-    }, [timeLeft, handleLogout]);
+    }, [handleLogout]);
 
-    // Formatear segundos a MM:SS
+    useEffect(() => {
+        setShowWarning(timeLeft <= WARNING_TIME && timeLeft > 0);
+    }, [timeLeft]);
+
     const formatTime = (seconds: number) => {
         const mins = Math.floor(seconds / 60);
         const secs = seconds % 60;
@@ -67,9 +59,12 @@ import { Timer, AlertTriangle } from 'lucide-react';
                 <AlertTriangle className="text-amber-600 h-5 w-5" />
                 <div className="text-sm text-amber-800">
                     <p className="font-bold">Inactividad detectada</p>
-                    <p>La sesión se cerrará en: <span className="font-mono font-bold text-lg">{formatTime(timeLeft)}</span></p>
+                    <p>
+                        La sesión se cerrará en:{' '}
+                        <span className="font-mono font-bold text-lg">{formatTime(timeLeft)}</span>
+                    </p>
                 </div>
-                <button 
+                <button
                     onClick={() => setTimeLeft(TOTAL_IDLE_TIME)}
                     className="ml-2 bg-amber-500 text-white px-2 py-1 rounded text-xs hover:bg-amber-600 transition"
                 >
