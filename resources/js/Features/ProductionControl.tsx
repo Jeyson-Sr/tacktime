@@ -228,7 +228,7 @@ const canFinishShift =
   };
 
   return (
-    <div className="min-h-screen w-full p-5">
+    <div className="min-h-screen w-full p-5 text-gray-800" style={{ colorScheme: 'light' }}>
       <div className="max-w mx-auto">
         {/* Header */}
         <div className="flex flex-col md:flex-row  gap-5 justify-between items-center bg-white rounded-lg shadow-lg p-4 mb-5">

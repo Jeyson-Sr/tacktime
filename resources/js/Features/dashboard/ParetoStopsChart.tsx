@@ -57,7 +57,10 @@ export default function ParetoStopsChart({ filters }: Props) {
   }, [filters]);
 
   return (
-    <div className="bg-white rounded-[26px] shadow-[0_8px_24px_rgba(15,23,42,0.08)] border border-gray-100 p-5">
+    <div
+      className="bg-white rounded-[26px] shadow-[0_8px_24px_rgba(15,23,42,0.08)] border border-gray-100 p-5 text-gray-800"
+      style={{ colorScheme: 'light' }}
+    >
       <div className="mb-4">
         <h2 className="text-[17px] font-black text-gray-700">
           Pareto de paradas
@@ -80,15 +83,27 @@ export default function ParetoStopsChart({ filters }: Props) {
           <ResponsiveContainer width="100%" height="100%">
             <ComposedChart data={data} margin={{ top: 10, right: 20, left: 10, bottom: 10 }}>
               <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="codigo" tick={{ fontSize: 12, fontWeight: 800 }} />
-              <YAxis yAxisId="left" label={{ value: "Minutos", angle: -90, position: "insideLeft" }} />
+              <XAxis dataKey="codigo" tick={{ fontSize: 12, fontWeight: 800, fill: '#1F2937' }} />
+              <YAxis
+                yAxisId="left"
+                tick={{ fill: '#4B5563' }}
+                label={{ value: "Minutos", angle: -90, position: "insideLeft", fill: '#4B5563' }}
+              />
               <YAxis
                 yAxisId="right"
                 orientation="right"
                 domain={[0, 100]}
+                tick={{ fill: '#4B5563' }}
                 tickFormatter={(value) => `${value}%`}
               />
               <Tooltip
+                contentStyle={{
+                  backgroundColor: '#ffffff',
+                  border: '1px solid #E5E7EB',
+                  color: '#1F2937',
+                }}
+                labelStyle={{ color: '#1F2937' }}
+                itemStyle={{ color: '#374151' }}
                 formatter={(value: any, name: string) => {
                   if (name === "total_minutos") return [`${value} min`, "Tiempo"];
                   if (name === "porcentaje_acumulado") return [`${value}%`, "Acumulado"];

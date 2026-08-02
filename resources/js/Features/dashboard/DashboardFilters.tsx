@@ -44,7 +44,10 @@ export default function DashboardFilters({
     : fallbackComponentes;
 
   return (
-    <div className="rounded-[26px] bg-white border border-gray-100 shadow-[0_8px_24px_rgba(15,23,42,0.08)] p-5">
+    <div
+      className="rounded-[26px] bg-white border border-gray-100 shadow-[0_8px_24px_rgba(15,23,42,0.08)] p-5 text-gray-800"
+      style={{ colorScheme: 'light' }}
+    >
       <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-4">
         <div>
           <h3 className="text-[17px] font-black text-gray-700">

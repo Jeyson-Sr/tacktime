@@ -262,7 +262,7 @@ useEffect(() => {
 
 
   return (
-    <div className="min-h-screen  p-4 md:p-8">
+    <div className="min-h-screen p-4 md:p-8 text-gray-800" style={{ colorScheme: 'light' }}>
       {alerta?.trim() && (
         <Alert variant="error" title="El campo es obligatorio" message={alerta} />
       )}

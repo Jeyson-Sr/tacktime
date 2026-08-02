@@ -62,7 +62,10 @@ export default function StopCodesRankingChart({ filters }: Props) {
   }, [filters, sortBy]);
 
   return (
-    <div className="bg-white rounded-[26px] shadow-[0_8px_24px_rgba(15,23,42,0.08)] border border-gray-100 p-5">
+    <div
+      className="bg-white rounded-[26px] shadow-[0_8px_24px_rgba(15,23,42,0.08)] border border-gray-100 p-5 text-gray-800"
+      style={{ colorScheme: 'light' }}
+    >
       <div className="flex items-center justify-between gap-3 mb-4">
         <div>
           <h2 className="text-[17px] font-black text-gray-700">
@@ -77,6 +80,7 @@ export default function StopCodesRankingChart({ filters }: Props) {
           value={sortBy}
           onChange={(e) => setSortBy(e.target.value as "minutes" | "frequency")}
           className="border border-gray-200 rounded-xl px-3 py-2 font-black bg-white text-gray-800 outline-none"
+          style={{ colorScheme: 'light' }}
         >
           <option value="minutes">Mayor tiempo</option>
           <option value="frequency">Mayor frecuencia</option>
@@ -100,14 +104,21 @@ export default function StopCodesRankingChart({ filters }: Props) {
               margin={{ top: 10, right: 20, left: 10, bottom: 10 }}
             >
               <CartesianGrid strokeDasharray="3 3" />
-              <XAxis type="number" />
+              <XAxis type="number" tick={{ fill: '#4B5563', fontSize: 12 }} />
               <YAxis
                 type="category"
                 dataKey="codigo"
                 width={70}
-                tick={{ fontSize: 12, fontWeight: 800 }}
+                tick={{ fontSize: 12, fontWeight: 800, fill: '#1F2937' }}
               />
               <Tooltip
+                contentStyle={{
+                  backgroundColor: '#ffffff',
+                  border: '1px solid #E5E7EB',
+                  color: '#1F2937',
+                }}
+                labelStyle={{ color: '#1F2937' }}
+                itemStyle={{ color: '#374151' }}
                 formatter={(value: any, name: string) => {
                   if (name === "total_minutos") return [`${value} min`, "Tiempo"];
                   if (name === "total_frecuencia") return [`${value}`, "Frecuencia"];
@@ -146,12 +157,12 @@ export default function StopCodesRankingChart({ filters }: Props) {
             </thead>
             <tbody>
               {data.map((item, index) => (
-                <tr key={item.codigo} className={index % 2 === 0 ? "bg-white" : "bg-gray-50"}>
-                  <td className="p-3 font-black">{item.codigo}</td>
-                  <td className="p-3">{item.descripcion}</td>
-                  <td className="p-3">{item.componente ?? item.tipo ?? item.categoria ?? "-"}</td>
-                  <td className="p-3 text-right font-bold">{safeNumber(item.total_minutos).toFixed(1)}</td>
-                  <td className="p-3 text-right font-bold">{safeNumber(item.total_frecuencia)}</td>
+                <tr key={item.codigo} className={index % 2 === 0 ? "bg-white text-gray-800" : "bg-gray-50 text-gray-800"}>
+                  <td className="p-3 font-black text-gray-900">{item.codigo}</td>
+                  <td className="p-3 text-gray-700">{item.descripcion}</td>
+                  <td className="p-3 text-gray-700">{item.componente ?? item.tipo ?? item.categoria ?? "-"}</td>
+                  <td className="p-3 text-right font-bold text-gray-800">{safeNumber(item.total_minutos).toFixed(1)}</td>
+                  <td className="p-3 text-right font-bold text-gray-800">{safeNumber(item.total_frecuencia)}</td>
                 </tr>
               ))}
             </tbody>

@@ -274,7 +274,10 @@ const OeeDashboard: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="w-full min-h-screen flex items-center justify-center bg-[#F5F7F8]">
+      <div
+        className="w-full min-h-screen flex items-center justify-center bg-[#F5F7F8] text-gray-800"
+        style={{ colorScheme: 'light' }}
+      >
         <div className="text-[#006B7A] font-black text-xl">
           Cargando dashboard OEE...
         </div>
@@ -283,7 +286,10 @@ const OeeDashboard: React.FC = () => {
   }
 
   return (
-    <div className="w-full min-h-screen bg-[#F5F7F8] p-6 space-y-6">
+    <div
+      className="w-full min-h-screen bg-[#F5F7F8] p-6 space-y-6 text-gray-800"
+      style={{ colorScheme: 'light' }}
+    >
       <div className="flex items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-black text-[#006B7A]">
@@ -457,11 +463,11 @@ const OeeDashboard: React.FC = () => {
                     {safeNumber(row.em).toFixed(1)} %
                   </td>
 
-                  <td className="p-3 text-right">{safeNumber(row.opd).toFixed(1)} %</td>
-                  <td className="p-3 text-right">{safeNumber(row.or).toFixed(1)} %</td>
-                  <td className="p-3 text-right">{safeNumber(row.pd).toFixed(1)} %</td>
-                  <td className="p-3 text-right">{safeNumber(row.rd).toFixed(1)} %</td>
-                  <td className="p-3 text-right">{safeNumber(row.eq).toFixed(1)} %</td>
+                  <td className="p-3 text-right text-gray-700">{safeNumber(row.opd).toFixed(1)} %</td>
+                  <td className="p-3 text-right text-gray-700">{safeNumber(row.or).toFixed(1)} %</td>
+                  <td className="p-3 text-right text-gray-700">{safeNumber(row.pd).toFixed(1)} %</td>
+                  <td className="p-3 text-right text-gray-700">{safeNumber(row.rd).toFixed(1)} %</td>
+                  <td className="p-3 text-right text-gray-700">{safeNumber(row.eq).toFixed(1)} %</td>
                   <td className="p-3 font-bold text-gray-700">
                     {row.unidad_negocio ?? "GENERAL"}
                   </td>
