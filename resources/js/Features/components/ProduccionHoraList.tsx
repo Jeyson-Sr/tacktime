@@ -254,6 +254,7 @@ function HoraRowEditable({ item, acumulado, index, onUpdateHour, onDelete }: Hor
                 step="0.1"
                 min="0"
                 className="w-20 text-[22px] font-black text-gray-800 bg-lime-50 border-b-2 border-lime-500 outline-none"
+                style={{ colorScheme: 'light' }}
                 defaultValue={producido}
                 onBlur={(e) => {
                   recalcularHora(Number(e.target.value || 0));
@@ -373,7 +374,8 @@ function HoraRowEditable({ item, acumulado, index, onUpdateHour, onDelete }: Hor
                           min="0"
                           value={p.tiempoMinutos}
                           onChange={(e) => handleMinutesChange(pIdx, Number(e.target.value || 0))}
-                          className="w-16 text-center font-bold text-sm bg-gray-100 rounded-lg py-1 outline-none focus:ring-2 ring-[#D4E157]"
+                          className="w-16 text-center font-bold text-sm text-gray-800 bg-gray-100 rounded-lg py-1 outline-none focus:ring-2 ring-[#D4E157]"
+                          style={{ colorScheme: 'light' }}
                         />
 
                         <button
@@ -405,13 +407,14 @@ function HoraRowEditable({ item, acumulado, index, onUpdateHour, onDelete }: Hor
                     {comentariosValidos.map((comentario, cIdx) => (
                       <textarea
                         key={`${(comentario as any).tipo || cIdx}-${cIdx}`}
-                        className={`w-full bg-gray-50 border-l-4 rounded-xl p-3 text-sm min-h-[80px] outline-none focus:ring-1 ring-gray-200 transition-all ${
+                        className={`w-full bg-gray-50 text-gray-800 border-l-4 rounded-xl p-3 text-sm min-h-[80px] outline-none focus:ring-1 ring-gray-200 transition-all placeholder:text-gray-400 ${
                           comentario.color === "green"
                             ? "border-green-500"
                             : comentario.color === "orange"
                             ? "border-orange-500"
                             : "border-gray-300"
                         }`}
+                        style={{ colorScheme: 'light' }}
                         placeholder="Escriba aquí..."
                         value={comentario.contenido || ""}
                         onChange={(e) => handleCommentChange(comentario, e.target.value, cIdx)}

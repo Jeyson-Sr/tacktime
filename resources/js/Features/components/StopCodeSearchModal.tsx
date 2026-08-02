@@ -80,9 +80,10 @@ const StopCodeSearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose, onSe
               autoFocus
               type="text"
               placeholder="Buscar por código (ej: A1) o descripción de falla..."
-              className="w-full pl-14 pr-6 py-5 bg-gray-50 border-2 border-transparent rounded-[24px] focus:border-[#D4E157] focus:bg-white outline-none font-bold text-lg transition-all placeholder:text-gray-300"
+              className="w-full pl-14 pr-6 py-5 bg-gray-50 text-gray-800 border-2 border-transparent rounded-[24px] focus:border-[#D4E157] focus:bg-white outline-none font-bold text-lg transition-all placeholder:text-gray-400"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
+              style={{ colorScheme: 'light' }}
             />
           </div>
         </div>

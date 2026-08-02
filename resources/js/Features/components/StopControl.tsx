@@ -313,9 +313,10 @@ return (
                 : ''
             }
             onChange={(e) => handleProducidoChange(e.target.value)}
-            className="w-full text-3xl font-mono font-black text-[#004B23] outline-none bg-transparent"
+            className="w-full text-3xl font-mono font-black text-[#004B23] outline-none bg-transparent placeholder:text-gray-300"
             placeholder="0"
             inputMode="numeric"
+            style={{ colorScheme: 'light' }}
           />
           <div className="absolute right-4 bottom-4 opacity-10">
             <CheckCircle2 size={40} />
@@ -385,8 +386,9 @@ return (
                 onClick={handleTap}
                 onDoubleClick={() => setIsModalOpenBuscadorCode(true)}
                 onChange={(e) => handleCodeChange(e.target.value)}
-                className="w-full px-3 py-3 bg-gray-50 border-none rounded-xl font-bold uppercase text-blue-600 focus:ring-2 ring-[#D4E157] transition-all text-sm"
+                className="w-full px-3 py-3 bg-gray-50 border-none rounded-xl font-bold uppercase text-blue-600 focus:ring-2 ring-[#D4E157] transition-all text-sm placeholder:text-gray-400"
                 placeholder="E1..."
+                style={{ colorScheme: 'light' }}
               />
             </div>
 
@@ -413,9 +415,10 @@ return (
                 type="number"
                 value={newStop.tiempoMinutos || ''}
                 onChange={(e) => setNewStop({ ...newStop, tiempoMinutos: Number(e.target.value) })}
-                className="w-full px-3 py-3 bg-gray-50 border-none rounded-xl font-bold focus:ring-2 ring-[#D4E157] text-sm"
+                className="w-full px-3 py-3 bg-gray-50 text-gray-800 border-none rounded-xl font-bold focus:ring-2 ring-[#D4E157] text-sm placeholder:text-gray-400"
                 placeholder="0"
                 inputMode="numeric"
+                style={{ colorScheme: 'light' }}
               />
             </div>
 
@@ -565,10 +568,10 @@ const CommentBox = ({ label, value, onChange, disabled, color }: any) => (
       value={value}
       disabled={disabled}
       onChange={(e) => onChange(e.target.value)}
-      className={`w-full p-4 rounded-2xl border-none text-sm font-medium transition-all min-h-[100px] resize-none
-        ${disabled ? 'bg-gray-50 text-gray-300 cursor-not-allowed' : 'bg-gray-50 focus:ring-2'}
+      className={`w-full p-4 rounded-2xl border-none text-sm font-medium transition-all min-h-[100px] resize-none placeholder:text-gray-400
+        ${disabled ? 'bg-gray-50 text-gray-300 cursor-not-allowed' : 'bg-gray-50 text-gray-800 focus:ring-2'}
       `}
-      style={{ '--tw-ring-color': color } as React.CSSProperties}
+      style={{ '--tw-ring-color': color, colorScheme: 'light' } as React.CSSProperties}
       placeholder={disabled ? "No requiere comentario..." : "Escriba observaciones..."}
     />
   </div>

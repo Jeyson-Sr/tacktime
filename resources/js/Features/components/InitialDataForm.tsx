@@ -312,11 +312,12 @@ useEffect(() => {
                style={{ borderColor: productoSel ? AJE.lima : '#E2E8F0' }}>
             <Search size={20} style={{ color: AJE.bosque }} />
             <input 
-              className="flex-1 bg-transparent outline-none text-lg font-medium placeholder-gray-300" 
+              className="flex-1 bg-transparent outline-none text-lg font-medium text-gray-800 placeholder:text-gray-400" 
               placeholder="Buscar por marca, sabor o SKU..."
               value={busqueda}
               onChange={(e) => setBusqueda(e.target.value)}
               onFocus={() => handleShowLista(true)}
+              style={{ colorScheme: 'light' }}
             />
             <SlidersHorizontal size={18} className="text-gray-300" />
           </div>
@@ -370,10 +371,11 @@ useEffect(() => {
                 <p className="text-[10px] text-gray-400 font-black mb-1 uppercase">Orden Prod. (OP)</p>
                 <input 
                    type="text" 
-                   className="w-full outline-none font-mono font-bold text-2xl text-blue-600 placeholder-gray-100" 
+                   className="w-full outline-none font-mono font-bold text-2xl text-blue-600 placeholder:text-gray-300" 
                    value={opValue} 
                    onChange={handleChangeOpValue}
                    placeholder={new Date().getFullYear().toString() + '...'}
+                   style={{ colorScheme: 'light' }}
                 />
               </div>
             </div>
