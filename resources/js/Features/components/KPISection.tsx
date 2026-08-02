@@ -42,7 +42,10 @@ const kpisOrdenados = [...kpis].sort((a, b) => {
 // const kpisOrdenados = [...kpis].sort((a, b) => b.value - a.value);
 
   return (
-    <div className="bg-white rounded-[40px] shadow-xl border border-gray-100 overflow-hidden">
+    <div
+      className="bg-white rounded-[40px] shadow-xl border border-gray-100 overflow-hidden text-gray-800"
+      style={{ colorScheme: 'light' }}
+    >
       {/* Header de la Sección */}
       <div className="p-8 pb-4 flex items-center justify-between">
         <div className="flex items-center gap-3">

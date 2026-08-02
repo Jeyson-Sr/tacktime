@@ -99,7 +99,8 @@ const Card = ({
 }) => {
   return (
     <div
-      className={`bg-white rounded-[26px] shadow-[0_8px_24px_rgba(15,23,42,0.08)] border border-gray-100 p-5 ${className}`}
+      className={`bg-white rounded-[26px] shadow-[0_8px_24px_rgba(15,23,42,0.08)] border border-gray-100 p-5 text-gray-800 ${className}`}
+      style={{ colorScheme: 'light' }}
     >
       <h2 className="text-[17px] font-black text-gray-700 mb-4">{title}</h2>
       {children}
@@ -119,7 +120,10 @@ const GaugeCard = ({ title, value }: { title: string; value: number }) => {
   const progress = (safeValue / 100) * arcLength;
 
   return (
-    <div className="bg-white rounded-[26px] shadow-[0_8px_24px_rgba(15,23,42,0.08)] border border-gray-100 p-6">
+    <div
+      className="bg-white rounded-[26px] shadow-[0_8px_24px_rgba(15,23,42,0.08)] border border-gray-100 p-6 text-gray-800"
+      style={{ colorScheme: 'light' }}
+    >
       <h2 className="text-[17px] font-black text-gray-700 mb-2">{title}</h2>
 
       <div className="relative h-[210px] flex items-end justify-center">
@@ -169,7 +173,10 @@ const CustomTooltip = ({ active, payload, label }: any) => {
   if (!active || !payload?.length) return null;
 
   return (
-    <div className="rounded-xl bg-white shadow-xl border border-gray-200 px-4 py-3">
+    <div
+      className="rounded-xl bg-white shadow-xl border border-gray-200 px-4 py-3 text-gray-800"
+      style={{ colorScheme: 'light' }}
+    >
       <p className="font-black text-gray-700 mb-1">{label}</p>
 
       {payload.map((item: any) => (
@@ -439,7 +446,7 @@ const OeeDashboard: React.FC = () => {
               {lineSummary.map((row, index) => (
                 <tr
                   key={row.linea}
-                  className={index % 2 === 0 ? "bg-white" : "bg-[#F0F3F4]"}
+                  className={index % 2 === 0 ? "bg-white text-gray-800" : "bg-[#F0F3F4] text-gray-800"}
                 >
                   <td className="p-3 font-black text-gray-700">
                     {formatLinea(row.linea)}

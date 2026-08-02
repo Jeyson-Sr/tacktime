@@ -33,7 +33,10 @@ const HourDetailModal: React.FC<HourDetailModalProps> = ({ hour, onClose }) => {
 
   return (
     <div className="fixed inset-0 z-[250] flex items-center justify-center p-4 bg-[#004B23]/50 backdrop-blur-md">
-      <div className="bg-[#F8FAFC] w-full max-w-4xl rounded-[40px] shadow-2xl flex flex-col max-h-[90vh] overflow-hidden border border-white/20">
+      <div
+        className="bg-[#F8FAFC] w-full max-w-4xl rounded-[40px] shadow-2xl flex flex-col max-h-[90vh] overflow-hidden border border-white/20 text-gray-800"
+        style={{ colorScheme: 'light' }}
+      >
         
         {/* HEADER: Identidad y Estado */}
         <div className="bg-[#004B23] p-8 text-white relative">

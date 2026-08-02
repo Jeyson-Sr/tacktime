@@ -115,7 +115,7 @@ export default function ParetoStopsChart({ filters }: Props) {
                   return item ? `${item.codigo} - ${item.descripcion}` : label;
                 }}
               />
-              <Legend />
+              <Legend wrapperStyle={{ color: '#374151' }} />
 
               <Bar yAxisId="left" dataKey="total_minutos" name="Tiempo perdido" radius={[10, 10, 0, 0]}>
                 {data.map((_, index) => (

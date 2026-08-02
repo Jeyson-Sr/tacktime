@@ -265,7 +265,7 @@ const DATA: HoraData[] = hourlyRecords
 
 
 return (
-  <div className="max-w-10xl mx-auto space-y-4 pb-10 px-2 sm:px-0">
+  <div className="max-w-10xl mx-auto space-y-4 pb-10 px-2 sm:px-0 text-gray-800" style={{ colorScheme: 'light' }}>
       
       <ProduccionHoraList
         data={DATA}

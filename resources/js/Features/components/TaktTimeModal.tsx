@@ -103,7 +103,10 @@ const cump        = calcularRatio24h();   // CUMP = cumplimiento del día comple
   return (
     <>
       <div className="fixed top-0 left-2 inset-0 z-[150] flex items-start justify-center p-4 bg-[#004B23]/40 backdrop-blur-md rounded-[30px]">
-        <div className="sticky top-6 bg-[#F8FAFC] w-full max-w-7xl rounded-[40px] shadow-2xl flex flex-col max-h-[95vh] overflow-hidden border border-white/20">
+        <div
+          className="sticky top-6 bg-[#F8FAFC] w-full max-w-7xl rounded-[40px] shadow-2xl flex flex-col max-h-[95vh] overflow-hidden border border-white/20 text-gray-800"
+          style={{ colorScheme: 'light' }}
+        >
           
           {/* HEADER SUPERIOR */}
           <div className="bg-[#004B23] p-8 text-white relative">
@@ -201,9 +204,9 @@ const ShiftSection: React.FC<ShiftSectionProps> = ({ title, icon, data, getStatu
         <h3 className="text-lg font-black text-gray-800 uppercase tracking-tight">{title}</h3>
       </div>
       <div className="flex items-center gap-3 ml-2 ">
-        <div className="bg-white/10 px-6 py-2 rounded-2xl backdrop-blur-sm border bg-gray-100">
-          <p className="text-[15px] font-black uppercase opacity-60">CUMP</p>
-          <p className="text-sm font-bold">{(cump * 100).toFixed(1)} %</p>
+        <div className="bg-gray-100 px-6 py-2 rounded-2xl border border-gray-200 text-gray-800">
+          <p className="text-[15px] font-black uppercase text-gray-500">CUMP</p>
+          <p className="text-sm font-bold text-gray-800">{(cump * 100).toFixed(1)} %</p>
         </div>
       </div>
     </div>

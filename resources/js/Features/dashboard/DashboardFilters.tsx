@@ -25,6 +25,8 @@ const fallbackComponentes = [
 const selectClass =
   "w-full border border-gray-200 rounded-xl px-3 py-2.5 font-bold bg-white text-gray-800 outline-none focus:ring-2 focus:ring-[#006B7A]/30 focus:border-[#006B7A]";
 
+const selectStyle = { colorScheme: 'light' as const };
+
 export default function DashboardFilters({
   filters,
   options,
@@ -84,6 +86,7 @@ export default function DashboardFilters({
           value={filters.year ?? ""}
           onChange={(e) => update("year", e.target.value)}
           className={selectClass}
+          style={selectStyle}
         >
           <option value="">Año</option>
           {options?.years?.map((year) => (
@@ -97,6 +100,7 @@ export default function DashboardFilters({
           value={filters.month ?? ""}
           onChange={(e) => update("month", e.target.value)}
           className={selectClass}
+          style={selectStyle}
         >
           <option value="">Mes</option>
           {options?.months?.map((month) => (
@@ -110,6 +114,7 @@ export default function DashboardFilters({
           value={filters.week ?? ""}
           onChange={(e) => update("week", e.target.value)}
           className={selectClass}
+          style={selectStyle}
         >
           <option value="">Semana</option>
           {options?.weeks?.map((week) => (
@@ -123,6 +128,7 @@ export default function DashboardFilters({
           value={filters.day ?? ""}
           onChange={(e) => update("day", e.target.value)}
           className={selectClass}
+          style={selectStyle}
         >
           <option value="">Día</option>
           {options?.days?.map((day) => (
@@ -136,6 +142,7 @@ export default function DashboardFilters({
           value={filters.linea ?? ""}
           onChange={(e) => update("linea", e.target.value)}
           className={selectClass}
+          style={selectStyle}
         >
           <option value="">Línea</option>
           {options?.lineas?.map((linea) => (
@@ -149,6 +156,7 @@ export default function DashboardFilters({
           value={filters.marca ?? ""}
           onChange={(e) => update("marca", e.target.value)}
           className={selectClass}
+          style={selectStyle}
         >
           <option value="">Marca</option>
           {options?.marcas?.map((marca) => (
@@ -162,6 +170,7 @@ export default function DashboardFilters({
           value={filters.componente ?? ""}
           onChange={(e) => update("componente", e.target.value)}
           className={selectClass}
+          style={selectStyle}
         >
           <option value="">Componente</option>
           {componentes.map((item) => (

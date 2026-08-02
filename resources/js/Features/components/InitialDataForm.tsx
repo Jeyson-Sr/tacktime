@@ -101,7 +101,7 @@ const SelectorIndustrial = ({ label, options, value, onChange, variant = 'dropdo
                   key={name} 
                   type="button" 
                   onClick={() => { onChange(name); setIsOpen(false); }}
-                  className={`w-full text-left px-5 py-2.5 text-sm transition-colors ${value === name ? 'bg-blue-600 text-white font-semibold' : 'text-gray-700 hover:bg-gray-50'}`}
+                className={`w-full text-left px-5 py-2.5 text-sm transition-colors ${value === name ? 'bg-blue-600 text-white font-semibold' : 'text-gray-800 hover:bg-gray-50'}`}
                 >
                   {name}
                 </button>

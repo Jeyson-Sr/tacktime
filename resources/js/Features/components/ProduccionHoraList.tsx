@@ -480,7 +480,7 @@ export default function ProduccionHoraList({
   let cumulative = 0;
 
   return (
-    <div className="w-full p-4">
+    <div className="w-full p-4 text-gray-800" style={{ colorScheme: 'light' }}>
       <div className="max-w-6xl mx-auto space-y-1">
         {data.map((item, i) => {
           cumulative += Number(item.phProducidos || 0);

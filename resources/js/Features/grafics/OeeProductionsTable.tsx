@@ -9,8 +9,10 @@ export default function OeeProductionsTable() {
   }, []);
 
   return (
-    <div className="bg-white rounded-2xl shadow-lg border border-green-50 p-6">
-      {/* Título con un toque verde oscuro y borde inferior */}
+    <div
+      className="bg-white rounded-2xl shadow-lg border border-green-50 p-6 text-gray-800"
+      style={{ colorScheme: 'light' }}
+    >
       <h2 className="text-2xl font-bold mb-6 text-green-800 border-b-2 border-green-400 pb-2 inline-block">
         Producciones Registradas
       </h2>

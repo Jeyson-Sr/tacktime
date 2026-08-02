@@ -50,7 +50,10 @@ const StopCodeSearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose, onSe
 
   return (
     <div className="fixed top-0 left-2 inset-0 z-[200] flex items-start justify-center p-4 bg-[#004B23]/40 backdrop-blur-md rounded-[30px]">
-      <div className="sticky top-10 -mt-100 bg-white w-full max-w-3xl rounded-[40px] shadow-2xl flex flex-col max-h-[85vh] overflow-hidden border border-white/20">
+      <div
+        className="sticky top-10 -mt-100 bg-white w-full max-w-3xl rounded-[40px] shadow-2xl flex flex-col max-h-[85vh] overflow-hidden border border-white/20 text-gray-800"
+        style={{ colorScheme: 'light' }}
+      >
         
         {/* HEADER: Título y Buscador */}
         <div className="p-8 pb-6 space-y-6">
@@ -135,10 +138,10 @@ const StopCodeSearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose, onSe
               ))}
             </div>
           ) : (
-            <div className="flex flex-col items-center justify-center py-20 opacity-30">
-              <Info size={60} className="mb-4" />
-              <p className="font-black text-center uppercase tracking-tighter">No se encontraron resultados</p>
-              <p className="text-xs font-bold text-center italic">Intente con otro término de búsqueda</p>
+            <div className="flex flex-col items-center justify-center py-20 text-gray-500">
+              <Info size={60} className="mb-4 text-gray-400" />
+              <p className="font-black text-center uppercase tracking-tighter text-gray-700">No se encontraron resultados</p>
+              <p className="text-xs font-bold text-center italic text-gray-500">Intente con otro término de búsqueda</p>
             </div>
           )}
         </div>
