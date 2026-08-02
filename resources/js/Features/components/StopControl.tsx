@@ -119,10 +119,28 @@ const StopControl: React.FC<StopControlProps> = ({
     });
   };
 
-  const handleProducidoChange = (value: number) => {
+  const handleProducidoChange = (rawValue: string) => {
+    if (rawValue === '') {
+      onUpdateHour({
+        producido: 0,
+        producidoIngresado: false,
+        justificar: Number(calculateJustificar(currentHour.estimado, 0).toFixed(1)),
+        status: calculateStatus(0, currentHour.estimado),
+      });
+      return;
+    }
+
+    const value = Number(rawValue);
+    if (Number.isNaN(value) || value < 0) return;
+
     const justificar = calculateJustificar(currentHour.estimado, value);
     const status = calculateStatus(value, currentHour.estimado);
-    onUpdateHour({ producido: value, justificar: Number(justificar.toFixed(1)), status });
+    onUpdateHour({
+      producido: value,
+      producidoIngresado: true,
+      justificar: Number(justificar.toFixed(1)),
+      status,
+    });
   };
 
   const handleAddStop = () => {
@@ -158,7 +176,10 @@ const StopControl: React.FC<StopControlProps> = ({
   };
 
   const handleFinalizar = () => {
-    if (!currentHour.producido || currentHour.producido < 0) {
+    const hasProducidoRegistrado =
+      currentHour.producidoIngresado === true || currentHour.producido > 0;
+
+    if (!hasProducidoRegistrado || currentHour.producido < 0) {
       setAlerta('');
       setAlerta('Debe ingresar la cantidad producida.');
       return;
@@ -185,7 +206,7 @@ const StopControl: React.FC<StopControlProps> = ({
 
 // 1. Transformación de los datos
 const DATA: HoraData[] = hourlyRecords
-  .filter(record => record.producido > 0) // Solo mostrar si tiene valor de producción
+  .filter(record => record.closed || record.producidoIngresado || record.producido > 0)
   .map(record => {
     // Definimos la configuración local para el mapeo de colores
     const config: { key: string; color: CommentColor }[] = [
@@ -261,8 +282,12 @@ return (
           <label className="text-[10px] font-black text-[#004B23] uppercase tracking-widest block mb-1">Producido</label>
           <input
             type="number"
-            value={currentHour.producido || ''}
-            onChange={(e) => handleProducidoChange(Number(e.target.value))}
+            value={
+              currentHour.producidoIngresado || currentHour.producido > 0
+                ? currentHour.producido
+                : ''
+            }
+            onChange={(e) => handleProducidoChange(e.target.value)}
             className="w-full text-3xl font-mono font-black text-[#004B23] outline-none bg-transparent"
             placeholder="0"
             inputMode="numeric"

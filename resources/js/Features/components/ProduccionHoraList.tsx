@@ -134,6 +134,7 @@ function HoraRowEditable({ item, acumulado, index, onUpdateHour, onDelete }: Hor
 
     onUpdateHour(hourIndex, {
       producido: nuevoProducido,
+      producidoIngresado: true,
       justificar: nuevoJustificar,
       justificado: nuevoJustificado,
       status,

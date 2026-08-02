@@ -114,6 +114,7 @@ export interface HourlyProduction {
   hourIndex: number;                  // Índice de la hora (0-11)
   estimado: number;                   // Pallets estimados a producir
   producido: number;                  // Pallets realmente producidos
+  producidoIngresado?: boolean;       // true cuando el operador registró PH (incluye 0)
   justificar: number;                 // Minutos que faltan por justificar
   justificado: number;                // Minutos ya justificados con paradas
   status: 'blue' | 'yellow' | 'red'; // Estado visual (100%, 90-99%, <90%)
